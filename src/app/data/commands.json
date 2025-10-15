@@ -1,0 +1,154 @@
+{
+    "categories": {
+        "voice_typing": {
+            "name": "Voice Typing",
+            "description": "Commands for controlling voice-to-text input",
+            "commands": {
+                "start_typing": {
+                    "phrase": "start typing",
+                    "description": "Begin voice-to-text input",
+                    "examples": ["start typing", "begin typing", "start dictation"],
+                    "shortcut": "Ctrl+Space"
+                },
+                "stop_typing": {
+                    "phrase": "stop typing",
+                    "description": "End voice-to-text input",
+                    "examples": ["stop typing", "end typing", "finish dictation"],
+                    "shortcut": "Ctrl+Space"
+                },
+                "delete_that": {
+                    "phrase": "delete that",
+                    "description": "Delete the last word or phrase",
+                    "examples": ["delete that", "remove that"],
+                    "shortcut": "Ctrl+Backspace"
+                },
+                "new_line": {
+                    "phrase": "new line",
+                    "description": "Insert a line break",
+                    "examples": ["new line", "line break"],
+                    "shortcut": "Enter"
+                },
+                "new_paragraph": {
+                    "phrase": "new paragraph",
+                    "description": "Insert two line breaks",
+                    "examples": ["new paragraph"],
+                    "shortcut": "Shift+Enter"
+                }
+            }
+        },
+        "punctuation": {
+            "name": "Punctuation",
+            "description": "Commands for adding punctuation marks",
+            "commands": {
+                "period": {
+                    "phrase": "period",
+                    "description": "Add a period (.)",
+                    "examples": ["period", "full stop"],
+                    "output": "."
+                },
+                "comma": {
+                    "phrase": "comma",
+                    "description": "Add a comma (,)",
+                    "examples": ["comma"],
+                    "output": ","
+                },
+                "question_mark": {
+                    "phrase": "question mark",
+                    "description": "Add a question mark (?)",
+                    "examples": ["question mark"],
+                    "output": "?"
+                },
+                "exclamation_mark": {
+                    "phrase": "exclamation mark",
+                    "description": "Add an exclamation mark (!)",
+                    "examples": ["exclamation mark", "exclamation point"],
+                    "output": "!"
+                }
+            }
+        },
+        "app_control": {
+            "name": "Application Control",
+            "description": "Commands for controlling applications",
+            "commands": {
+                "open_app": {
+                    "phrase": "open [app]",
+                    "description": "Open a specified application",
+                    "examples": ["open Safari", "open Mail", "open Settings"],
+                    "parameters": ["app_name"]
+                },
+                "close_app": {
+                    "phrase": "close [app]",
+                    "description": "Close a specified application",
+                    "examples": ["close Safari", "close Mail"],
+                    "parameters": ["app_name"]
+                },
+                "switch_to": {
+                    "phrase": "switch to [app]",
+                    "description": "Switch to a running application",
+                    "examples": ["switch to Safari", "switch to Mail"],
+                    "parameters": ["app_name"]
+                }
+            }
+        },
+        "system_control": {
+            "name": "System Control",
+            "description": "Commands for controlling system settings",
+            "commands": {
+                "volume": {
+                    "phrase": "volume [level]",
+                    "description": "Set system volume (0-100)",
+                    "examples": ["volume 50", "volume 75"],
+                    "parameters": ["volume_level"]
+                },
+                "mute": {
+                    "phrase": "mute",
+                    "description": "Mute system audio",
+                    "examples": ["mute", "mute audio"],
+                    "shortcut": "Ctrl+M"
+                },
+                "unmute": {
+                    "phrase": "unmute",
+                    "description": "Unmute system audio",
+                    "examples": ["unmute", "unmute audio"],
+                    "shortcut": "Ctrl+M"
+                }
+            }
+        },
+        "web_commands": {
+            "name": "Web Commands",
+            "description": "Commands for web browsing",
+            "commands": {
+                "search": {
+                    "phrase": "search for [query]",
+                    "description": "Perform a web search",
+                    "examples": ["search for weather", "search for news"],
+                    "parameters": ["search_query"]
+                },
+                "go_to": {
+                    "phrase": "go to [website]",
+                    "description": "Navigate to a website",
+                    "examples": ["go to google.com", "go to github.com"],
+                    "parameters": ["website_url"]
+                }
+            }
+        },
+        "assistant_control": {
+            "name": "Assistant Control",
+            "description": "Commands for controlling the voice assistant",
+            "commands": {
+                "help": {
+                    "phrase": "help",
+                    "description": "Show help and available commands",
+                    "examples": ["help", "show help", "what can you do"],
+                    "shortcut": "F1"
+                },
+                "settings": {
+                    "phrase": "open settings",
+                    "description": "Open settings panel",
+                    "examples": ["open settings", "show settings"],
+                    "shortcut": "Ctrl+,"
+                }
+            }
+        }
+    }
+}
