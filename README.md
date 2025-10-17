@@ -1,6 +1,6 @@
 # Voice Assistant
 
-A modern, user-friendly voice assistant with voice typing and system control capabilities. Built with Python and PyQt6, featuring a clean interface and extensive voice command support.
+A modern, user-friendly voice assistant with voice typing and system control capabilities. Built with Python and PyQt6, featuring a clean interface and extensive voice command support. I'm hoping to keep working on fixing some of the tweaks so the program can run smoothly.
 
 ## Features
 
