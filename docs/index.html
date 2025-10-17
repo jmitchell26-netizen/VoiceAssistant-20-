@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant - Modern Voice Control & Typing</title>
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --text-color: #333;
+            --bg-color: #fff;
+            --secondary-bg: #f5f5f5;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text-color: #fff;
+                --bg-color: #1E1E1E;
+                --secondary-bg: #2D2D2D;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: var(--secondary-bg);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 40px 0;
+        }
+
+        .feature-card {
+            background: var(--secondary-bg);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #0056b3;
+        }
+
+        .demo-section {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .demo-video {
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--secondary-bg);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🎤 Voice Assistant</h1>
+            <p>A modern, user-friendly voice assistant with voice typing and system control capabilities</p>
+            <a href="https://github.com/jmitchell26-netizen/VoiceAssistant-20-" class="cta-button">View on GitHub</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎤</div>
+                <h3>Voice Typing</h3>
+                <p>Real-time speech-to-text with natural punctuation commands and live preview</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Voice Commands</h3>
+                <p>Control your system, manage applications, and perform web searches with voice</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💫</div>
+                <h3>Modern UI</h3>
+                <p>Clean interface with dark/light theme support and floating controls</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Smart Help</h3>
+                <p>Interactive help center with contextual suggestions and quick reference</p>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>Getting Started</h2>
+            <pre><code>
+# Clone the repository
+git clone https://github.com/jmitchell26-netizen/VoiceAssistant-20-.git
+
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Run the application
+python3 src/main.py
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>Key Features</h2>
+            <ul>
+                <li>Real-time speech recognition with high accuracy</li>
+                <li>Natural language commands for system control</li>
+                <li>Intuitive voice typing with punctuation support</li>
+                <li>Modern, responsive user interface</li>
+                <li>Dark and light theme support</li>
+                <li>Comprehensive help and documentation</li>
+                <li>Quick action panel for common tasks</li>
+                <li>Floating microphone control</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built with ❤️ using Python and PyQt6</p>
+        <p>Licensed under MIT License</p>
+    </footer>
+</body>
+</html>
