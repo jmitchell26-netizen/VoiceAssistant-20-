@@ -35,7 +35,7 @@ class VoiceWidget(QWidget):
     def __init__(self, settings_manager=None):
         super().__init__()
         self.settings_manager = settings_manager
-        self.voice_manager = VoiceRecognitionManager(settings_manager) if settings_manager else VoiceRecognitionManager()
+        self.voice_manager = VoiceRecognitionManager()
         self.typing_mode = VoiceTypingMode(self.voice_manager)
         self.command_handler = CommandHandler()
         self.contextual_help = ContextualHelp()

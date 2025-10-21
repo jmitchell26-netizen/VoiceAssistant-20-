@@ -35,17 +35,19 @@ class VoiceRecognitionManager(QObject):
     audio_level = pyqtSignal(float)   # Emitted to update audio level visualization
     state_changed = pyqtSignal(str)   # Emitted when recognition state changes
 
-    def __init__(self, settings_manager):
+    def __init__(self):
         super().__init__()
-        self.settings_manager = settings_manager
         self.recognizer = sr.Recognizer()
         self.engine = pyttsx3.init()
         self.is_listening = False
         self.audio_queue = queue.Queue()
         self.setup_audio_processing()
         
-        # Load and apply recognition settings
-        self.load_recognition_settings()
+        # Set default recognition settings
+        self.recognizer.energy_threshold = 300
+        self.recognizer.dynamic_energy_threshold = True
+        self.recognizer.pause_threshold = 0.8
+        self.recognizer.phrase_threshold = 0.3
         
         # Initialize processing thread
         self.processing_thread = None
