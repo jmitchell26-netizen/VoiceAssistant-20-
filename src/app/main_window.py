@@ -10,6 +10,7 @@ from .widgets.help_center import HelpCenter
 from .widgets.onboarding import OnboardingDialog
 from .widgets.settings_panel import SettingsDialog
 from .utils.theme_manager import ThemeManager
+from .utils.settings_manager import SettingsManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,7 +22,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Voice Assistant")
         self.setMinimumSize(800, 600)
         
-        # Initialize theme manager
+        # Initialize managers
+        self.settings_manager = SettingsManager()
         self.theme_manager = ThemeManager()
         
         # Create central widget and layout
@@ -38,7 +40,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.stacked_widget)
         
         # Create and add main views
-        self.voice_widget = VoiceWidget()
+        self.voice_widget = VoiceWidget(settings_manager=self.settings_manager)
         self.help_center = HelpCenter()
         
         self.stacked_widget.addWidget(self.voice_widget)

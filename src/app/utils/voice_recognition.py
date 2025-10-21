@@ -35,28 +35,47 @@ class VoiceRecognitionManager(QObject):
     audio_level = pyqtSignal(float)   # Emitted to update audio level visualization
     state_changed = pyqtSignal(str)   # Emitted when recognition state changes
 
-    def __init__(self):
+    def __init__(self, settings_manager):
         super().__init__()
+        self.settings_manager = settings_manager
         self.recognizer = sr.Recognizer()
         self.engine = pyttsx3.init()
         self.is_listening = False
         self.audio_queue = queue.Queue()
         self.setup_audio_processing()
         
-        # Adjust recognition settings
-        self.recognizer.energy_threshold = 300  # Increased sensitivity
-        self.recognizer.dynamic_energy_threshold = True
-        self.recognizer.pause_threshold = 0.8  # Shorter pause detection
-        self.recognizer.phrase_threshold = 0.3  # More responsive
+        # Load and apply recognition settings
+        self.load_recognition_settings()
         
         # Initialize processing thread
         self.processing_thread = None
+
+    def load_recognition_settings(self):
+        """Load recognition settings from settings manager"""
+        settings = self.settings_manager.get_setting('voice_recognition', {})
+        self.recognizer.energy_threshold = settings.get('energy_threshold', 300)
+        self.recognizer.dynamic_energy_threshold = settings.get('dynamic_energy_threshold', True)
+        self.recognizer.pause_threshold = settings.get('pause_threshold', 0.8)
+        self.recognizer.phrase_threshold = settings.get('phrase_threshold', 0.3)
+        self.audio_threshold = settings.get('audio_threshold', 0.01)
+
+    def save_recognition_settings(self):
+        """Save current recognition settings"""
+        settings = {
+            'energy_threshold': self.recognizer.energy_threshold,
+            'dynamic_energy_threshold': self.recognizer.dynamic_energy_threshold,
+            'pause_threshold': self.recognizer.pause_threshold,
+            'phrase_threshold': self.recognizer.phrase_threshold,
+            'audio_threshold': self.audio_threshold
+        }
+        self.settings_manager.update_setting('voice_recognition', settings)
 
     def setup_audio_processing(self):
         """Set up audio processing parameters"""
         self.sample_rate = 16000
         self.block_size = 1024
-        self.audio_threshold = 0.01
+        self.audio_threshold = self.settings_manager.get_setting(
+            'voice_recognition', 'audio_threshold') or 0.01
 
     def start_listening(self):
         """Start listening for audio input"""
@@ -125,6 +144,12 @@ class VoiceRecognitionManager(QObject):
             pass  # Ignore unrecognized audio
         except sr.RequestError as e:
             self.error_occurred.emit(f"Error with speech recognition service: {str(e)}")
+
+    def update_sensitivity(self, value):
+        """Update microphone sensitivity"""
+        self.recognizer.energy_threshold = value
+        self.save_recognition_settings()
+        self.error_occurred.emit(f"Microphone sensitivity updated to {value}")
 
     def speak(self, text):
         """Convert text to speech"""
