@@ -20,7 +20,9 @@ class SettingsManager:
             },
             "interface": {
                 "show_floating_button": True,
-                "start_minimized": False
+                "start_minimized": False,
+                "onboarding_completed": False,
+                "skip_intro": False
             },
             "shortcuts": {
                 "start_listening": "Ctrl+Space",

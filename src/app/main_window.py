@@ -50,8 +50,9 @@ class MainWindow(QMainWindow):
         self.floating_button = FloatingButton(self)
         self.floating_button.show()
         
-        # Show onboarding for first-time users
-        self.show_onboarding()
+        # Show onboarding only if not completed
+        if not self.settings_manager.get_setting('interface', 'onboarding_completed'):
+            self.show_onboarding()
         
         # Initialize navigation history
         self.navigation_history = []
@@ -119,8 +120,8 @@ class MainWindow(QMainWindow):
         
     def onboarding_completed(self):
         """Handle onboarding completion"""
-        # TODO: Save onboarding completion status
-        pass
+        self.settings_manager.update_setting('interface', 'onboarding_completed', True)
+        self.settings_manager.update_setting('interface', 'skip_intro', True)
         
     def navigate_back(self):
         """Go back to the previous page"""
