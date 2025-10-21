@@ -18,6 +18,9 @@ class MainWindow(QMainWindow):
         # Initialize managers before UI
         self.settings_manager = SettingsManager()
         self.theme_manager = ThemeManager()
+        self.voice_widget = None
+        self.help_center = None
+        self.floating_button = None
         self.init_ui()
         
     def init_ui(self):
@@ -40,21 +43,27 @@ class MainWindow(QMainWindow):
         
         # Create and add main views
         try:
+            # Initialize main widgets
             self.voice_widget = VoiceWidget(settings_manager=self.settings_manager)
             self.help_center = HelpCenter()
+            
+            # Add widgets to stack if successfully created
+            if self.voice_widget and self.help_center:
+                self.stacked_widget.addWidget(self.voice_widget)
+                self.stacked_widget.addWidget(self.help_center)
+            
+            # Create floating microphone button
+            self.floating_button = FloatingButton(self)
+            if self.floating_button:
+                self.floating_button.show()
+            
+            # Show onboarding only if not completed
+            if not self.settings_manager.get_setting('interface', 'onboarding_completed'):
+                self.show_onboarding()
+            
         except Exception as e:
             print(f"Error initializing widgets: {str(e)}")
-        
-        self.stacked_widget.addWidget(self.voice_widget)
-        self.stacked_widget.addWidget(self.help_center)
-        
-        # Create floating microphone button
-        self.floating_button = FloatingButton(self)
-        self.floating_button.show()
-        
-        # Show onboarding only if not completed
-        if not self.settings_manager.get_setting('interface', 'onboarding_completed'):
-            self.show_onboarding()
+            raise  # Re-raise the exception to be caught by main error handler
         
         # Initialize navigation history
         self.navigation_history = []
@@ -100,8 +109,9 @@ class MainWindow(QMainWindow):
     
     def show_help(self):
         """Show the help center and add current page to navigation history"""
-        self.navigation_history.append(self.stacked_widget.currentWidget())
-        self.stacked_widget.setCurrentWidget(self.help_center)
+        if self.help_center:
+            self.navigation_history.append(self.stacked_widget.currentWidget())
+            self.stacked_widget.setCurrentWidget(self.help_center)
     
     def show_settings(self):
         """Show the settings dialog"""
@@ -133,6 +143,6 @@ class MainWindow(QMainWindow):
             
     def return_home(self):
         """Return to the main voice widget"""
-        if self.stacked_widget.currentWidget() != self.voice_widget:
+        if self.voice_widget and self.stacked_widget.currentWidget() != self.voice_widget:
             self.navigation_history.append(self.stacked_widget.currentWidget())
             self.stacked_widget.setCurrentWidget(self.voice_widget)
