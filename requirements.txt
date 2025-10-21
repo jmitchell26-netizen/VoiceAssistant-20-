@@ -6,3 +6,4 @@ sounddevice>=0.4.5
 numpy>=1.21.0
 darkdetect>=0.7.1
 qtawesome>=1.2.1
+pyaudio>=0.2.14
