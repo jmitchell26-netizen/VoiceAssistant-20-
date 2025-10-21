@@ -15,16 +15,15 @@ from .utils.settings_manager import SettingsManager
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Initialize managers before UI
+        self.settings_manager = SettingsManager()
+        self.theme_manager = ThemeManager()
         self.init_ui()
         
     def init_ui(self):
         # Set window properties
         self.setWindowTitle("Voice Assistant")
         self.setMinimumSize(800, 600)
-        
-        # Initialize managers
-        self.settings_manager = SettingsManager()
-        self.theme_manager = ThemeManager()
         
         # Create central widget and layout
         central_widget = QWidget()
@@ -40,8 +39,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.stacked_widget)
         
         # Create and add main views
-        self.voice_widget = VoiceWidget(settings_manager=self.settings_manager)
-        self.help_center = HelpCenter()
+        try:
+            self.voice_widget = VoiceWidget(settings_manager=self.settings_manager)
+            self.help_center = HelpCenter()
+        except Exception as e:
+            print(f"Error initializing widgets: {str(e)}")
         
         self.stacked_widget.addWidget(self.voice_widget)
         self.stacked_widget.addWidget(self.help_center)
