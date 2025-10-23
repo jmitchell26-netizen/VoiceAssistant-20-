@@ -23,6 +23,12 @@ class MainWindow(QMainWindow):
         self.floating_button = None
         self.init_ui()
         
+    def closeEvent(self, event):
+        """Handle application closure"""
+        if self.voice_widget:
+            self.voice_widget.voice_manager.cleanup()
+        super().closeEvent(event)
+        
     def init_ui(self):
         # Set window properties
         self.setWindowTitle("Voice Assistant")

@@ -42,6 +42,16 @@ class VoiceWidget(QWidget):
         self.init_ui()
         self.setup_connections()
         
+    def closeEvent(self, event):
+        """Handle cleanup when widget is closed"""
+        self.voice_manager.cleanup()
+        super().closeEvent(event)
+        
+    def hideEvent(self, event):
+        """Handle cleanup when widget is hidden"""
+        self.voice_manager.stop_listening()
+        super().hideEvent(event)
+        
     def init_ui(self):
         layout = QVBoxLayout(self)
         
