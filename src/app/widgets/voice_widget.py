@@ -5,7 +5,8 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPainter, QColor
 import qtawesome as qta
 
-from ..utils.voice_recognition import VoiceRecognitionManager, VoiceTypingMode
+from ..utils.voice_recognition import VoiceRecognitionManager
+from ..utils.voice_typing import VoiceTypingMode
 from ..utils.command_handler import CommandHandler
 from ..utils.contextual_help import ContextualHelp
 from .command_suggestions import CommandSuggestions
