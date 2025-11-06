@@ -1,92 +1,296 @@
 # Voice Assistant
 
-A modern, user-friendly voice assistant with voice typing and system control capabilities. Built with Python and PyQt6, featuring a clean interface and extensive voice command support. I'm hoping to keep working on fixing some of the tweaks so the program can run smoothly.
+A modern, intelligent voice assistant with **context-aware browser control**, voice typing, and system automation. Built with Python and PyQt6, featuring seamless background operation and global hotkey support.
 
-## Features
+## 🎉 What Makes This Special?
 
-### 🎤 Voice Typing
+**Control your browser with voice - without ever leaving the browser window!**
+
+Press **Ctrl+Space** from Safari or Chrome, say "new tab", and watch it happen. No window switching, no clicking around. Just pure voice control.
+
+## ✨ Key Features
+
+### 🌐 **Context-Aware Browser Control** (NEW!)
+- **Automatic detection** of Safari, Chrome, Firefox, Arc, Brave, and Edge
+- **Browser-specific commands** - "new tab", "close tab", "go to [url]"
+- **Smart navigation** - "go back", "search for [query]", "refresh"
+- **Page control** - "scroll down", "zoom in", "find [text] on page"
+- **Tab management** - "close all tabs", "bookmark this"
+- **Works in background** - control browser without switching windows!
+
+### ⚡ **Global Hotkey** (NEW!)
+- **Ctrl+Space** works from ANY application
+- Toggle voice listening on/off without switching windows
+- Stay in Safari/Chrome while giving voice commands
+- Browser stays focused the entire time
+
+### 🎤 **Enhanced Floating Button** (NEW!)
+- **Color-coded status**:
+  - 🔘 Gray = Not listening
+  - 🔵 Blue = Listening (general mode)
+  - 🟢 Green = Listening + Browser mode active!
+- Click to toggle listening
+- Drag to reposition anywhere on screen
+- Always on top of all windows
+- Double-click to show/hide main window
+
+### 📝 Voice Typing
 - Real-time speech-to-text conversion
 - Natural punctuation commands ("period", "comma", etc.)
 - Text formatting commands
 - Live preview of transcribed text
 
-### 🎯 Voice Commands
-- System control (volume, brightness)
+### 🖥️ System Control
 - Application management (open, close, switch)
+- Window control (minimize, maximize)
 - Web search capabilities
 - Custom commands support
 
 ### 💫 Modern UI
 - Clean, minimalist interface
-- Floating microphone button
+- Dynamic command suggestions based on context
 - Dark/Light theme support
 - Quick action panel
-- Navigation controls (back/home)
-
-### 🔍 Help & Documentation
 - Interactive help center
-- Command suggestions
-- Quick reference cards
-- Contextual help system
 
-## Installation
+## 🚀 Quick Start
 
-1. Clone the repository:
+### 1. Install
+
 ```bash
 git clone https://github.com/jmitchell26-netizen/VoiceAssistant-20-.git
 cd VoiceAssistant-20-
-```
-
-2. Install dependencies:
-```bash
 pip3 install -r requirements.txt
 ```
 
-3. Run the application:
+### 2. Grant Permissions (macOS)
+
+The voice assistant needs **Accessibility permission** to:
+- Detect active applications
+- Control browsers with voice
+- Use global hotkeys (Ctrl+Space)
+
+**How to grant:**
+1. Go to: **System Settings > Privacy & Security > Accessibility**
+2. Click the 🔒 lock icon to unlock
+3. Click **+** and add **Python** (or your Terminal app)
+4. Restart the voice assistant
+
+### 3. Run
+
 ```bash
 python3 src/main.py
 ```
 
-## Usage
+### 4. Try It Out!
 
-### Voice Typing
-1. Click "Start Typing" or use the floating microphone button
-2. Speak naturally
-3. Use commands like:
-   - "period" for .
-   - "new line" for line break
-   - "delete that" to remove last word
+1. **Open Safari or Chrome**
+2. **Press Ctrl+Space** (while in the browser!)
+3. Look for the **green floating button** (bottom-right)
+4. **Say**: "new tab"
+5. **Press Ctrl+Space** again to stop
+6. **Success!** 🎉
 
-### Voice Commands
-- "open [app]" - Launch applications
-- "volume [0-100]" - Control system volume
-- "search for [query]" - Web search
-- "help" - Show available commands
+**See [START_HERE.md](START_HERE.md) for detailed getting started guide.**
 
-### Navigation
-- Use the back button (←) to return to previous screens
-- Home button (🏠) returns to main interface
-- Quick actions panel (⚡) for common commands
+## 💡 Usage
 
-## Keyboard Shortcuts
-- Start/Stop Listening: Ctrl+Space
-- Show/Hide Window: Ctrl+Alt+V
-- Quick Commands: Ctrl+Q
-- Switch Mode: Ctrl+M
+### Three Ways to Control
 
-## System Requirements
-- Python 3.8 or higher
-- macOS 10.14 or higher
-- Microphone access
-- Internet connection (for web features)
+1. **Global Hotkey** (⚡ Fastest!)
+   - Press **Ctrl+Space** from any app
+   - Say your command
+   - Press **Ctrl+Space** again to stop
+   - No window switching required!
 
-## Contributing
+2. **Floating Button** (👁️ Visual)
+   - Click the circular microphone button
+   - Watch the color for status
+   - Drag to reposition
+   - Double-click to show main window
+
+3. **Main Window** (📋 Traditional)
+   - Click "Command Mode" or "Start Typing"
+   - Use buttons in the interface
+   - View command suggestions and help
+
+### Browser Commands (When Green Button Shows)
+
+**Tab Management:**
+```
+"new tab"           → Opens new tab
+"close tab"         → Closes current tab
+"close all tabs"    → Closes all tabs
+```
+
+**Navigation:**
+```
+"go to github.com"            → Navigate to URL
+"search for python tutorials" → Google search
+"go back" / "go forward"      → Navigate history
+"refresh"                     → Reload page
+```
+
+**Page Control:**
+```
+"scroll down" / "scroll up"      → Scroll page
+"scroll to top" / "to bottom"    → Jump to top/bottom
+"zoom in" / "zoom out"           → Adjust zoom
+"find hello on page"             → Search for text
+"bookmark this"                  → Bookmark page
+```
+
+### General Commands (Always Available)
+
+```
+"open [app name]"          → Launch application
+"close [app name]"         → Close application
+"switch to [app name]"     → Switch to app
+"minimize window"          → Minimize window
+"maximize window"          → Maximize window
+```
+
+### Voice Typing Commands
+
+```
+"period" / "comma"         → Add punctuation
+"new line"                 → Line break
+"new paragraph"            → Paragraph break
+"capitalize that"          → Capitalize last phrase
+"all caps" / "lowercase"   → Change case
+```
+
+## ⌨️ Keyboard Shortcuts
+
+- **Ctrl+Space** - Toggle voice listening (works from ANY app!)
+- Double-click floating button - Show/hide main window
+- Drag floating button - Reposition
+- Click floating button - Toggle listening
+
+## 📋 System Requirements
+
+- **Python 3.8 or higher**
+- **macOS 10.14 or higher** (macOS Monterey+ recommended)
+- **Microphone access**
+- **Accessibility permissions** (for browser control and hotkeys)
+- Internet connection (for voice recognition)
+
+### Dependencies
+- PyQt6 - Modern UI framework
+- SpeechRecognition - Voice recognition
+- pyttsx3 - Text-to-speech
+- pynput - Global hotkey support
+- pyaudio - Audio processing
+- See `requirements.txt` for complete list
+
+## 📚 Documentation
+
+- **[START_HERE.md](START_HERE.md)** - Quick start guide
+- **[GLOBAL_HOTKEY_GUIDE.md](GLOBAL_HOTKEY_GUIDE.md)** - Complete hotkey usage guide
+- **[BROWSER_FEATURE_TEST.md](BROWSER_FEATURE_TEST.md)** - Testing checklist
+- **[BROWSER_FEATURE_IMPLEMENTATION.md](BROWSER_FEATURE_IMPLEMENTATION.md)** - Technical details
+- **[USABILITY_IMPROVEMENTS_SUMMARY.md](USABILITY_IMPROVEMENTS_SUMMARY.md)** - Feature summary
+
+## 🐛 Troubleshooting
+
+### Commands show as "unrecognized"
+- Check if the **floating button is green** (browser mode active)
+- Make sure Safari/Chrome is the **frontmost window**
+- Press **Ctrl+Space** to ensure listening is active
+
+### Ctrl+Space doesn't work
+- Grant **Accessibility permissions** (see installation step 2)
+- Check console for error messages
+- Ensure **pynput** is installed
+
+### Browser mode doesn't activate
+- Click on the **browser window** to make it frontmost
+- Look for the green **"🌐 Browser Mode"** banner
+- Check Accessibility permissions
+
+### Floating button stays gray
+- Click it or press **Ctrl+Space** to activate
+- Gray means not listening (this is normal when idle)
+
+## 🎯 Example Workflows
+
+### Research Workflow
+```
+(In Safari)
+Ctrl+Space                       → Start listening
+"search for machine learning"    → Opens search
+Ctrl+Space                       → Stop listening
+
+(Review results)
+Ctrl+Space                       → Start listening
+"new tab"                        → Opens tab
+"go to github.com"              → Navigates
+Ctrl+Space                       → Stop listening
+```
+
+### Tab Management
+```
+(In Chrome with many tabs)
+Ctrl+Space                       → Start listening
+"close tab"                      → Closes current
+"close tab"                      → Closes another
+"new tab"                        → Opens fresh tab
+Ctrl+Space                       → Stop listening
+```
+
+### Writing & Research
+```
+(In Safari reading article)
+Ctrl+Space                       → Start listening
+"scroll to bottom"               → Scrolls down
+"find conclusion on page"        → Finds text
+"bookmark this"                  → Saves page
+Ctrl+Space                       → Stop listening
+```
+
+## 🚀 What's New in Latest Version
+
+### v2.0 - Context-Aware Intelligence
+- ✅ **Browser Power User** - Context-aware browser control
+- ✅ **Global Hotkey** - Ctrl+Space works from any app
+- ✅ **Enhanced Floating Button** - Color-coded status
+- ✅ **Background Operation** - Works while window is hidden
+- ✅ **Smart Detection** - Auto-detects browsers
+- ✅ **15+ Browser Commands** - Full browser automation
+- ✅ **Zero Window Switching** - Seamless workflow
+
+## 🤝 Contributing
+
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+### Ideas for Future Enhancements
+- Windows/Linux support
+- Customizable hotkeys
+- Additional context modes (IDE, file manager, etc.)
+- Voice training for better accuracy
+- Command history and replay
+- Multi-language support
+
+## 📄 License
+
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-- Built with PyQt6 for the modern UI
-- Uses SpeechRecognition for voice processing
-- Integrates with system services for enhanced functionality
+## 🙏 Acknowledgments
+
+- Built with **PyQt6** for the modern UI
+- **SpeechRecognition** for voice processing
+- **pynput** for global hotkey support
+- **AppleScript** for browser automation on macOS
+- Integrates with macOS system services
+
+## 📧 Support
+
+Having issues? Check these resources:
+1. [START_HERE.md](START_HERE.md) - Quick start guide
+2. [GLOBAL_HOTKEY_GUIDE.md](GLOBAL_HOTKEY_GUIDE.md) - Detailed usage
+3. [Troubleshooting section](#-troubleshooting) above
+4. Open an issue on GitHub
+
+---
+
+**Made with ❤️ for seamless voice control**

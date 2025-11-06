@@ -61,6 +61,13 @@ class MainWindow(QMainWindow):
             # Create floating microphone button
             self.floating_button = FloatingButton(self)
             if self.floating_button:
+                # Connect floating button to voice widget
+                self.floating_button.clicked_to_toggle.connect(self.voice_widget.handle_global_toggle)
+                # Update floating button state when voice state changes
+                self.voice_widget.voice_manager.state_changed.connect(self.update_floating_button_state)
+                # Update floating button for browser mode
+                self.voice_widget.window_detector.browser_active.connect(lambda b: self.floating_button.set_browser_mode(True))
+                self.voice_widget.window_detector.browser_inactive.connect(lambda: self.floating_button.set_browser_mode(False))
                 self.floating_button.show()
             
             # Show onboarding only if not completed
@@ -152,3 +159,10 @@ class MainWindow(QMainWindow):
         if self.voice_widget and self.stacked_widget.currentWidget() != self.voice_widget:
             self.navigation_history.append(self.stacked_widget.currentWidget())
             self.stacked_widget.setCurrentWidget(self.voice_widget)
+    
+    def update_floating_button_state(self, state):
+        """Update floating button visual state based on voice manager state"""
+        if self.floating_button:
+            # Update listening state (listening, processing, or ready)
+            is_active = state in ['listening', 'processing']
+            self.floating_button.set_listening(is_active)

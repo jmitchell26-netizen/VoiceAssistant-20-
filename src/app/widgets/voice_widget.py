@@ -9,9 +9,12 @@ from ..utils.voice_recognition import VoiceRecognitionManager
 from ..utils.voice_typing import VoiceTypingMode
 from ..utils.command_handler import CommandHandler
 from ..utils.contextual_help import ContextualHelp
+from ..utils.active_window_detector import ActiveWindowDetector
+from ..utils.global_hotkey import GlobalHotkeyManager
 from .command_suggestions import CommandSuggestions
 from .quick_actions import QuickActionsPanel
 from .quick_reference import QuickReferenceCard
+from .animated_mic import AnimatedMicrophoneIcon
 
 class AudioLevelIndicator(QProgressBar):
     def __init__(self):
@@ -20,46 +23,109 @@ class AudioLevelIndicator(QProgressBar):
         self.setMinimum(0)
         self.setMaximum(100)
         self.setValue(0)
-        self.setStyleSheet("""
-            QProgressBar {
-                border: 2px solid #555;
+        self._current_state = 'ready'
+        self._update_style()
+    
+    def set_state(self, state):
+        """Update the color based on state (ready, listening, processing, error, speaking)"""
+        self._current_state = state
+        self._update_style()
+    
+    def _update_style(self):
+        """Update stylesheet based on current state"""
+        colors = {
+            'ready': '#808080',      # Gray
+            'listening': '#4CAF50',  # Green
+            'processing': '#FFC107', # Yellow/Amber
+            'error': '#F44336',      # Red
+            'speaking': '#2196F3'    # Blue
+        }
+        color = colors.get(self._current_state, '#808080')
+        
+        self.setStyleSheet(f"""
+            QProgressBar {{
+                border: 2px solid {color};
                 border-radius: 5px;
                 background: #2D2D2D;
-            }
-            QProgressBar::chunk {
-                background-color: #007AFF;
+            }}
+            QProgressBar::chunk {{
+                background-color: {color};
                 border-radius: 3px;
-            }
+            }}
         """)
 
 class VoiceWidget(QWidget):
     def __init__(self, settings_manager=None):
         super().__init__()
         self.settings_manager = settings_manager
-        self.voice_manager = VoiceRecognitionManager()
+        self.voice_manager = VoiceRecognitionManager(settings_manager=self.settings_manager)
         self.typing_mode = VoiceTypingMode(self.voice_manager)
         self.command_handler = CommandHandler()
         self.contextual_help = ContextualHelp()
+        self.window_detector = ActiveWindowDetector()
+        self.hotkey_manager = GlobalHotkeyManager()
         self.init_ui()
         self.setup_connections()
+        
+        # Start window detection and hotkey listening
+        self.window_detector.start()
+        self.hotkey_manager.start()
         
     def closeEvent(self, event):
         """Handle cleanup when widget is closed"""
         self.voice_manager.cleanup()
+        self.window_detector.cleanup()
+        self.hotkey_manager.cleanup()
         super().closeEvent(event)
         
     def hideEvent(self, event):
-        """Handle cleanup when widget is hidden"""
-        self.voice_manager.stop_listening()
+        """Handle when widget is hidden - but keep listening in background!"""
+        # Don't stop listening - we want background operation
+        # The user can use Ctrl+Space or the floating button to control listening
         super().hideEvent(event)
         
     def init_ui(self):
         layout = QVBoxLayout(self)
         
-        # Status indicator
-        self.status_label = QLabel("🎤 Ready")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.status_label)
+        # Context indicator (shows browser mode, etc.)
+        self.context_label = QLabel("")
+        self.context_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.context_label.setStyleSheet("""
+            QLabel {
+                color: #4CAF50;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 8px;
+                background: rgba(76, 175, 80, 0.1);
+                border-radius: 5px;
+                min-height: 20px;
+            }
+        """)
+        self.context_label.hide()  # Hidden by default
+        layout.addWidget(self.context_label)
+        
+        # Animated microphone icon with status
+        self.animated_mic = AnimatedMicrophoneIcon()
+        self.animated_mic.setFixedSize(150, 150)
+        mic_container = QHBoxLayout()
+        mic_container.addStretch()
+        mic_container.addWidget(self.animated_mic)
+        mic_container.addStretch()
+        layout.addLayout(mic_container)
+        
+        # Partial/interim text display (real-time transcription preview)
+        self.partial_text_label = QLabel("")
+        self.partial_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.partial_text_label.setStyleSheet("""
+            QLabel {
+                color: #888888;
+                font-style: italic;
+                font-size: 11px;
+                min-height: 20px;
+                padding: 5px;
+            }
+        """)
+        layout.addWidget(self.partial_text_label)
         
         # Audio level indicator
         self.audio_level = AudioLevelIndicator()
@@ -132,14 +198,28 @@ class VoiceWidget(QWidget):
     def setup_connections(self):
         # Connect voice manager signals
         self.voice_manager.text_received.connect(self.handle_text_received)
+        self.voice_manager.partial_text_received.connect(self.handle_partial_text)
         self.voice_manager.error_occurred.connect(self.handle_error)
         self.voice_manager.audio_level.connect(self.update_audio_level)
         self.voice_manager.state_changed.connect(self.handle_state_change)
+        
+        # Connect animated microphone
+        self.voice_manager.audio_level.connect(self.animated_mic.set_audio_level)
+        self.voice_manager.state_changed.connect(self.animated_mic.set_state)
+        
+        # Connect window detector signals
+        self.window_detector.browser_active.connect(self.handle_browser_active)
+        self.window_detector.browser_inactive.connect(self.handle_browser_inactive)
+        self.window_detector.active_app_changed.connect(self.handle_app_changed)
+        
+        # Connect global hotkey signals
+        self.hotkey_manager.toggle_listening.connect(self.handle_global_toggle)
         
         # Connect command handler signals
         self.command_handler.command_executed.connect(self.handle_command_executed)
         self.command_handler.command_failed.connect(self.handle_error)
         self.command_handler.suggestion_updated.connect(self.suggestions.update_suggestions)
+        self.command_handler.context_changed.connect(self.handle_context_changed)
         
         # Connect button signals
         self.type_button.clicked.connect(self.toggle_typing)
@@ -155,12 +235,10 @@ class VoiceWidget(QWidget):
         if self.is_typing:
             self.voice_manager.start_listening()
             self.type_button.setText("Stop Typing")
-            self.status_label.setText("🎤 Listening for typing...")
             self.content_stack.setCurrentWidget(self.typing_widget)
         else:
             self.voice_manager.stop_listening()
             self.type_button.setText("Start Typing")
-            self.status_label.setText("🎤 Ready")
         self.update_button_states()
         
     def toggle_command_mode(self):
@@ -169,12 +247,10 @@ class VoiceWidget(QWidget):
         if self.is_command_mode:
             self.voice_manager.start_listening()
             self.command_button.setText("Stop Commands")
-            self.status_label.setText("🎤 Listening for commands...")
             self.content_stack.setCurrentWidget(self.command_widget)
         else:
             self.voice_manager.stop_listening()
             self.command_button.setText("Command Mode")
-            self.status_label.setText("🎤 Ready")
         self.update_button_states()
         
     def handle_text_received(self, text):
@@ -201,16 +277,55 @@ class VoiceWidget(QWidget):
             # Show quick tip
             tip = self.contextual_help.get_quick_tip(text)
             if tip:
-                self.status_label.setText(f"💡 {tip}")
-                QTimer.singleShot(5000, lambda: self.status_label.setText("🎤 Ready"))
+                self.partial_text_label.setText(f"💡 {tip}")
+                QTimer.singleShot(5000, lambda: self._reset_partial_text_style())
         
+    def handle_partial_text(self, text):
+        """Update the partial text display with interim transcription"""
+        self.partial_text_label.setText(text)
+    
     def handle_command_executed(self, message):
-        self.status_label.setText(f"✅ {message}")
-        QTimer.singleShot(3000, lambda: self.status_label.setText("🎤 Ready"))
+        # Show success message briefly
+        self.partial_text_label.setText(f"✅ {message}")
+        self.partial_text_label.setStyleSheet("""
+            QLabel {
+                color: #4CAF50;
+                font-style: normal;
+                font-size: 11px;
+                font-weight: bold;
+                min-height: 20px;
+                padding: 5px;
+            }
+        """)
+        QTimer.singleShot(3000, lambda: self._reset_partial_text_style())
         
     def handle_error(self, error_message):
-        self.status_label.setText(f"⚠️ Error: {error_message}")
-        QTimer.singleShot(3000, lambda: self.status_label.setText("🎤 Ready"))
+        # Show error message briefly
+        self.partial_text_label.setText(f"⚠️ {error_message}")
+        self.partial_text_label.setStyleSheet("""
+            QLabel {
+                color: #F44336;
+                font-style: normal;
+                font-size: 11px;
+                font-weight: bold;
+                min-height: 20px;
+                padding: 5px;
+            }
+        """)
+        QTimer.singleShot(3000, lambda: self._reset_partial_text_style())
+    
+    def _reset_partial_text_style(self):
+        """Reset partial text label to default style"""
+        self.partial_text_label.setText("")
+        self.partial_text_label.setStyleSheet("""
+            QLabel {
+                color: #888888;
+                font-style: italic;
+                font-size: 11px;
+                min-height: 20px;
+                padding: 5px;
+            }
+        """)
         
     def update_audio_level(self, level):
         # Convert audio level to percentage (0-100)
@@ -218,10 +333,9 @@ class VoiceWidget(QWidget):
         self.audio_level.setValue(percentage)
         
     def handle_state_change(self, state):
-        if state == "listening":
-            self.status_label.setText("🎤 Listening...")
-        elif state == "stopped":
-            self.status_label.setText("🎤 Ready")
+        """Handle state changes and update UI colors accordingly"""
+        # Update audio level indicator color
+        self.audio_level.set_state(state)
         
     def update_button_states(self):
         # Update button states based on current mode
@@ -264,3 +378,61 @@ class VoiceWidget(QWidget):
         else:
             # Process other commands through command handler
             self.command_handler.process_command(command)
+    
+    def handle_browser_active(self, browser_name):
+        """Handle when a browser becomes active"""
+        # Notify command handler
+        self.command_handler.set_browser_active(browser_name)
+        
+        # Show browser mode indicator
+        self.context_label.setText(f"🌐 Browser Mode: {browser_name}")
+        self.context_label.show()
+        
+        # Update suggestions to show browser commands
+        if self.is_command_mode:
+            self.command_handler.get_suggestions("")
+    
+    def handle_browser_inactive(self):
+        """Handle when switching away from a browser"""
+        # Notify command handler
+        self.command_handler.set_browser_inactive()
+        
+        # Hide browser mode indicator
+        self.context_label.hide()
+        
+        # Update suggestions back to general commands
+        if self.is_command_mode:
+            self.command_handler.get_suggestions("")
+    
+    def handle_app_changed(self, app_name):
+        """Handle when the active app changes"""
+        print(f"Active app: {app_name}")
+    
+    def handle_context_changed(self, context):
+        """Handle when the command context changes"""
+        print(f"Command context: {context}")
+        
+        # Update quick reference to show relevant commands
+        if context == 'browser':
+            self.quick_reference.show_browser_commands()
+        else:
+            self.quick_reference.show_general_commands()
+    
+    def handle_global_toggle(self):
+        """Handle Ctrl+Space hotkey press to toggle listening"""
+        print("🎤 Global hotkey triggered - toggling voice listening")
+        
+        # Toggle command mode if not already in a mode
+        if not self.is_typing and not self.is_command_mode:
+            # Start command mode
+            self.toggle_command_mode()
+        elif self.is_command_mode:
+            # Stop command mode
+            self.toggle_command_mode()
+        elif self.is_typing:
+            # Stop typing mode
+            self.toggle_typing()
+        
+        # Show a brief notification
+        self.partial_text_label.setText(f"🎤 {'Listening' if self.is_command_mode or self.is_typing else 'Stopped'} (Ctrl+Space)")
+        QTimer.singleShot(2000, lambda: self._reset_partial_text_style())

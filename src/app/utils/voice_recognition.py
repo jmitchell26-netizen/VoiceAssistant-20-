@@ -1,37 +1,56 @@
 import speech_recognition as sr
 import pyttsx3
-from PyQt6.QtCore import QObject, pyqtSignal, QThread
+from PyQt6.QtCore import QObject, pyqtSignal
 import pyaudio
-import wave
 import numpy as np
-import time
-import queue
 
 class VoiceRecognitionManager(QObject):
     text_received = pyqtSignal(str)
+    partial_text_received = pyqtSignal(str)  # For real-time transcription preview
     error_occurred = pyqtSignal(str)
     audio_level = pyqtSignal(float)
-    state_changed = pyqtSignal(str)
+    state_changed = pyqtSignal(str)  # States: ready, listening, processing, speaking, error
 
-    def __init__(self):
+    def __init__(self, settings_manager=None):
         super().__init__()
         print("\nInitializing Voice Recognition Manager...")
         
+        self.settings_manager = settings_manager
         self.recognizer = sr.Recognizer()
         self.engine = pyttsx3.init()
         self.is_listening = False
+        self.microphone = None
+        self.stop_listening_callback = None
         self.audio = pyaudio.PyAudio()
-        self.stream = None
-        self.audio_buffer = queue.Queue()
+        self.level_stream = None  # Separate stream for audio level monitoring
         
-        # Adjusted settings for high audio levels
-        self.recognizer.energy_threshold = 4000  # Higher threshold since we're getting strong input
-        self.recognizer.dynamic_energy_threshold = True
-        self.recognizer.dynamic_energy_adjustment_damping = 0.15
-        self.recognizer.dynamic_energy_ratio = 1.2
-        self.recognizer.pause_threshold = 0.6  # Longer pause to get complete phrases
-        self.recognizer.phrase_threshold = 0.3
-        self.recognizer.non_speaking_duration = 0.4
+        # Load settings from settings_manager or use defaults
+        if self.settings_manager:
+            energy_threshold = self.settings_manager.get_setting('voice_recognition', 'energy_threshold')
+            pause_threshold = self.settings_manager.get_setting('voice_recognition', 'pause_threshold')
+            dynamic_energy_threshold = self.settings_manager.get_setting('voice_recognition', 'dynamic_energy_threshold')
+            dynamic_energy_adjustment_damping = self.settings_manager.get_setting('voice_recognition', 'dynamic_energy_adjustment_damping')
+            dynamic_energy_ratio = self.settings_manager.get_setting('voice_recognition', 'dynamic_energy_ratio')
+            phrase_threshold = self.settings_manager.get_setting('voice_recognition', 'phrase_threshold')
+            non_speaking_duration = self.settings_manager.get_setting('voice_recognition', 'non_speaking_duration')
+        else:
+            # Use optimal defaults from testing
+            energy_threshold = 110
+            pause_threshold = 1.2
+            dynamic_energy_threshold = True
+            dynamic_energy_adjustment_damping = 0.15
+            dynamic_energy_ratio = 1.2
+            phrase_threshold = 0.3
+            non_speaking_duration = 0.4
+        
+        # Apply optimal settings from testing
+        self.recognizer.energy_threshold = energy_threshold
+        self.recognizer.dynamic_energy_threshold = dynamic_energy_threshold
+        self.recognizer.dynamic_energy_adjustment_damping = dynamic_energy_adjustment_damping
+        self.recognizer.dynamic_energy_ratio = dynamic_energy_ratio
+        self.recognizer.pause_threshold = pause_threshold
+        self.recognizer.phrase_threshold = phrase_threshold
+        self.recognizer.non_speaking_duration = non_speaking_duration
         
         # Audio settings optimized for your microphone
         self.RATE = 16000  # Standard rate for speech recognition
@@ -43,6 +62,8 @@ class VoiceRecognitionManager(QObject):
         
         print("Recognition settings configured:")
         print(f"- Energy threshold: {self.recognizer.energy_threshold}")
+        print(f"- Pause threshold: {self.recognizer.pause_threshold}")
+        print(f"- Dynamic energy threshold: {self.recognizer.dynamic_energy_threshold}")
         print(f"- Audio threshold: {self.AUDIO_THRESHOLD}")
         print(f"- Gain: {self.GAIN}")
         print(f"- Sample rate: {self.RATE}")
@@ -71,34 +92,34 @@ class VoiceRecognitionManager(QObject):
                 self.is_listening = True
                 self.state_changed.emit("listening")
                 
-                # Get default input device
-                default_device = self.audio.get_default_input_device_info()
-                print(f"Using input device: {default_device.get('name')}")
+                # Initialize microphone
+                print("Initializing microphone...")
+                self.microphone = sr.Microphone(sample_rate=self.RATE)
                 
-                # Initialize microphone with PyAudio
-                self.stream = self.audio.open(
-                    format=self.FORMAT,
-                    channels=self.CHANNELS,
-                    rate=self.RATE,
-                    input=True,
-                    input_device_index=default_device.get('index'),
-                    frames_per_buffer=self.CHUNK,
-                    stream_callback=self._audio_callback
-                )
-                
-                self.stream.start_stream()
-                print("Audio stream started successfully")
-                
-                # Initialize recognizer with microphone
-                with sr.Microphone(sample_rate=self.RATE) as source:
+                # Calibrate for ambient noise
+                with self.microphone as source:
                     print("\nCalibrating for ambient noise... Please be quiet.")
                     self.recognizer.adjust_for_ambient_noise(source, duration=2)
                     print(f"Calibration complete. Energy threshold now: {self.recognizer.energy_threshold}")
                 
+                # Start listening in background (like the test version)
+                print("Starting background listening...")
+                self.stop_listening_callback = self.recognizer.listen_in_background(
+                    self.microphone,
+                    self._audio_callback,
+                    phrase_time_limit=None  # No limit on phrase length
+                )
+                
+                # Start audio level monitoring stream
+                self._start_level_monitoring()
+                
+                print("Listening started successfully")
                 self.error_occurred.emit("Ready to listen - speak normally")
                 
             except Exception as e:
                 print(f"Error starting audio: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 self.error_occurred.emit(f"Error starting audio: {str(e)}")
                 self.stop_listening()
 
@@ -106,92 +127,112 @@ class VoiceRecognitionManager(QObject):
         if self.is_listening:
             print("Stopping audio listening...")
             self.is_listening = False
-            self.state_changed.emit("stopped")
+            self.state_changed.emit("ready")
             
-            if self.stream:
+            # Stop background listening
+            if self.stop_listening_callback:
                 try:
-                    self.stream.stop_stream()
-                    self.stream.close()
+                    self.stop_listening_callback(wait_for_stop=False)
                 except Exception as e:
-                    print(f"Error closing stream: {str(e)}")
-                self.stream = None
+                    print(f"Error stopping background listener: {str(e)}")
+                self.stop_listening_callback = None
             
-            while not self.audio_buffer.empty():
-                try:
-                    self.audio_buffer.get_nowait()
-                except queue.Empty:
-                    break
+            # Stop level monitoring
+            self._stop_level_monitoring()
             
+            self.microphone = None
             print("Audio cleanup complete")
             self.error_occurred.emit("Stopped listening")
 
-    def _audio_callback(self, in_data, frame_count, time_info, status):
+    def _audio_callback(self, recognizer, audio):
+        """Callback for listen_in_background - handles recognized audio"""
         if not self.is_listening:
-            return (None, pyaudio.paComplete)
+            return
             
         try:
-            # Convert audio data to numpy array
-            audio_data = np.frombuffer(in_data, dtype=np.float32)
-            
-            # Normalize the audio (reduce very high levels)
-            audio_data = np.clip(audio_data, -1.0, 1.0)
-            
-            # Apply gain (reduced since we have strong input)
-            audio_data = audio_data * self.GAIN
-            
-            # Calculate audio level
-            audio_level = float(np.max(np.abs(audio_data)))
+            # Calculate audio level for UI display
+            audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16)
+            audio_level = float(np.max(np.abs(audio_data))) / 32768.0
             self.audio_level.emit(audio_level)
             
-            # If we detect sound above threshold
-            if audio_level > self.AUDIO_THRESHOLD:
-                print(f"Audio detected - Level: {audio_level:.4f}")
-                # Store normalized audio
-                self.audio_buffer.put(audio_data.tobytes())
+            # Emit processing state (yellow indicator)
+            self.state_changed.emit("processing")
+            
+            # Show typing indicator while processing
+            self.partial_text_received.emit("...")
+            
+            # Try to recognize speech
+            print("Attempting speech recognition...")
+            try:
+                text = recognizer.recognize_google(audio, language='en-US')
+                print(f"Successfully recognized: {text}")
                 
-                # Process audio if we have enough data
-                if self.audio_buffer.qsize() >= 8:  # About 0.5 seconds of audio
-                    try:
-                        print("Processing audio chunk...")
-                        # Combine audio data
-                        audio_data = b''
-                        while not self.audio_buffer.empty():
-                            audio_data += self.audio_buffer.get()
-                        
-                        # Convert to AudioData object
-                        audio = sr.AudioData(audio_data, self.RATE, 4)
-                        
-                        # Try recognition with multiple attempts
-                        print("Attempting speech recognition...")
-                        try:
-                            text = self.recognizer.recognize_google(audio, language='en-US')
-                            print(f"Successfully recognized: {text}")
-                            self.text_received.emit(text)
-                        except sr.UnknownValueError:
-                            # Try again with adjusted settings
-                            try:
-                                self.recognizer.energy_threshold = int(self.recognizer.energy_threshold * 0.8)
-                                print(f"Retrying with energy threshold: {self.recognizer.energy_threshold}")
-                                text = self.recognizer.recognize_google(audio, language='en-US')
-                                print(f"Second attempt succeeded: {text}")
-                                self.text_received.emit(text)
-                            except sr.UnknownValueError:
-                                print("\nSpeech not recognized. Please try:")
-                                print("1. Speaking clearly and at a normal pace")
-                                print("2. Using simple test phrases like 'test' or 'hello'")
-                                print("3. Waiting a moment before speaking")
-                                print(f"Current audio level: {audio_level:.4f}")
-                        
-                    except sr.RequestError as e:
-                        print(f"Recognition error: {str(e)}")
-                        self.error_occurred.emit(f"Recognition error: {str(e)}")
-            
-            return (None, pyaudio.paContinue)
-            
+                # Clear partial text and emit final text
+                self.partial_text_received.emit("")
+                self.text_received.emit(text)
+                
+                # Return to listening state
+                self.state_changed.emit("listening")
+            except sr.UnknownValueError:
+                print("Speech not recognized")
+                self.partial_text_received.emit("")
+                self.state_changed.emit("listening")
+            except sr.RequestError as e:
+                print(f"Recognition error: {str(e)}")
+                self.partial_text_received.emit("")
+                self.state_changed.emit("error")
+                self.error_occurred.emit(f"Recognition error: {str(e)}")
+                
         except Exception as e:
             print(f"Error in audio callback: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            self.partial_text_received.emit("")
+            self.state_changed.emit("error")
             self.error_occurred.emit(f"Error processing audio: {str(e)}")
+    
+    def _level_monitoring_callback(self, in_data, frame_count, time_info, status):
+        """Callback for audio level monitoring stream"""
+        if not self.is_listening:
+            return (None, pyaudio.paComplete)
+        
+        try:
+            # Convert audio data to numpy array
+            audio_data = np.frombuffer(in_data, dtype=np.int16)
+            # Calculate audio level (normalize to 0-1)
+            audio_level = float(np.max(np.abs(audio_data))) / 32768.0
+            self.audio_level.emit(audio_level)
+            
             return (None, pyaudio.paContinue)
+        except Exception as e:
+            return (None, pyaudio.paContinue)
+    
+    def _start_level_monitoring(self):
+        """Start a separate audio stream for level monitoring"""
+        try:
+            default_device = self.audio.get_default_input_device_info()
+            self.level_stream = self.audio.open(
+                format=pyaudio.paInt16,
+                channels=1,
+                rate=self.RATE,
+                input=True,
+                input_device_index=default_device.get('index'),
+                frames_per_buffer=self.CHUNK,
+                stream_callback=self._level_monitoring_callback
+            )
+            self.level_stream.start_stream()
+        except Exception as e:
+            print(f"Warning: Could not start level monitoring: {str(e)}")
+    
+    def _stop_level_monitoring(self):
+        """Stop the audio level monitoring stream"""
+        if self.level_stream:
+            try:
+                self.level_stream.stop_stream()
+                self.level_stream.close()
+            except Exception as e:
+                print(f"Error stopping level monitoring: {str(e)}")
+            self.level_stream = None
 
     def update_sensitivity(self, value):
         try:
@@ -204,10 +245,16 @@ class VoiceRecognitionManager(QObject):
 
     def speak(self, text):
         try:
+            self.state_changed.emit("speaking")
             self.engine.say(text)
             self.engine.runAndWait()
+            if self.is_listening:
+                self.state_changed.emit("listening")
+            else:
+                self.state_changed.emit("ready")
         except Exception as e:
             print(f"Error in text-to-speech: {str(e)}")
+            self.state_changed.emit("error")
             self.error_occurred.emit(f"Error speaking text: {str(e)}")
 
     def cleanup(self):

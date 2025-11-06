@@ -67,3 +67,42 @@ class QuickReferenceCard(QWidget):
         commands += "- Control media playback\n"
         
         self.reference_text.setText(commands)
+    
+    def show_browser_commands(self):
+        """Show browser-specific commands"""
+        commands = "🌐 Browser Commands:\n\n"
+        commands += "Tab Management:\n"
+        commands += "- 'close tab' - Close current tab\n"
+        commands += "- 'new tab' - Open a new tab\n"
+        commands += "- 'close all tabs' - Close all tabs\n\n"
+        commands += "Navigation:\n"
+        commands += "- 'go back' - Navigate back\n"
+        commands += "- 'go forward' - Navigate forward\n"
+        commands += "- 'refresh' - Reload the page\n"
+        commands += "- 'go to [url]' - Navigate to URL\n"
+        commands += "- 'search for [query]' - Search Google\n\n"
+        commands += "Page Control:\n"
+        commands += "- 'scroll up/down' - Scroll the page\n"
+        commands += "- 'scroll to top/bottom' - Jump to top/bottom\n"
+        commands += "- 'zoom in/out' - Adjust zoom level\n"
+        commands += "- 'find [text] on page' - Find text\n"
+        commands += "- 'bookmark this' - Bookmark current page\n"
+        
+        self.reference_text.setText(commands)
+    
+    def show_general_commands(self):
+        """Show general system commands"""
+        commands = "System Commands:\n\n"
+        commands += "Application Control:\n"
+        commands += "- 'open [app name]' - Open an application\n"
+        commands += "- 'close [app name]' - Close an application\n"
+        commands += "- 'switch to [app name]' - Switch to an app\n\n"
+        commands += "Window Management:\n"
+        commands += "- 'minimize window' - Minimize current window\n"
+        commands += "- 'maximize window' - Maximize current window\n\n"
+        commands += "Voice Typing:\n"
+        commands += "- Use 'Start Typing' button\n"
+        commands += "- Say punctuation: 'period', 'comma', etc.\n"
+        commands += "- Say 'new line' or 'new paragraph'\n"
+        
+        self.reference_text.setText(commands)
