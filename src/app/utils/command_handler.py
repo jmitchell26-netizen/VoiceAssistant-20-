@@ -3,6 +3,7 @@ import subprocess
 import platform
 
 from .browser_commands import BrowserCommandRouter
+from .app_launcher import AppLauncher
 
 class CommandHandler(QObject):
     command_executed = pyqtSignal(str)
@@ -13,12 +14,17 @@ class CommandHandler(QObject):
     def __init__(self):
         super().__init__()
         self.browser_router = BrowserCommandRouter()
+        self.app_launcher = AppLauncher()
         self.current_context = 'general'
         self.is_browser_active = False
         
         # Connect browser command signals
         self.browser_router.command_executed.connect(self.command_executed.emit)
         self.browser_router.command_failed.connect(self.command_failed.emit)
+        
+        # Connect app launcher signals
+        self.app_launcher.app_opened.connect(lambda name: self.command_executed.emit(f"Opened {name}"))
+        self.app_launcher.app_not_found.connect(self._handle_app_not_found)
         
         self.setup_commands()
 
@@ -163,37 +169,65 @@ class CommandHandler(QObject):
         self.suggestion_updated.emit(suggestions)
 
     def _handle_open(self, app_name):
-        """Handle the 'open' command"""
-        try:
-            if platform.system() == 'Darwin':  # macOS
-                subprocess.Popen(['open', '-a', app_name])
-                self.command_executed.emit(f"Opened {app_name}")
-            else:
-                self.command_failed.emit("Open command not implemented for this platform")
-        except Exception as e:
-            self.command_failed.emit(f"Failed to open {app_name}: {str(e)}")
+        """Handle the 'open' command with smart app matching"""
+        if not app_name:
+            self.command_failed.emit("Please specify an application to open")
+            return
+        
+        # Use the smart app launcher (handles aliases and fuzzy matching)
+        success, message = self.app_launcher.open_app(app_name)
+        
+        # Signals are already emitted by app_launcher connections
+        # No need to emit here as well
+    
+    def _handle_app_not_found(self, app_name, suggestions):
+        """Handle when an app is not found"""
+        if suggestions:
+            suggestion_text = ", ".join(suggestions)
+            self.command_failed.emit(
+                f"Could not find '{app_name}'. Did you mean: {suggestion_text}?"
+            )
+        else:
+            self.command_failed.emit(
+                f"Could not find application '{app_name}'. "
+                f"Try saying the full application name, like 'Visual Studio Code' or 'Google Chrome'."
+            )
 
     def _handle_close(self, app_name):
-        """Handle the 'close' command"""
+        """Handle the 'close' command with smart app name resolution"""
+        if not app_name:
+            self.command_failed.emit("Please specify an application to close")
+            return
+        
+        # Resolve app name using aliases
+        actual_name = self.app_launcher._resolve_alias(app_name.lower())
+        
         try:
             if platform.system() == 'Darwin':  # macOS
-                subprocess.Popen(['osascript', '-e', f'tell application "{app_name}" to quit'])
-                self.command_executed.emit(f"Closed {app_name}")
+                subprocess.Popen(['osascript', '-e', f'tell application "{actual_name}" to quit'])
+                self.command_executed.emit(f"Closed {actual_name}")
             else:
                 self.command_failed.emit("Close command not implemented for this platform")
         except Exception as e:
-            self.command_failed.emit(f"Failed to close {app_name}: {str(e)}")
+            self.command_failed.emit(f"Failed to close {actual_name}: {str(e)}")
 
     def _handle_switch(self, app_name):
-        """Handle the 'switch to' command"""
+        """Handle the 'switch to' command with smart app name resolution"""
+        if not app_name:
+            self.command_failed.emit("Please specify an application to switch to")
+            return
+        
+        # Resolve app name using aliases
+        actual_name = self.app_launcher._resolve_alias(app_name.lower())
+        
         try:
             if platform.system() == 'Darwin':  # macOS
-                subprocess.Popen(['osascript', '-e', f'tell application "{app_name}" to activate'])
-                self.command_executed.emit(f"Switched to {app_name}")
+                subprocess.Popen(['osascript', '-e', f'tell application "{actual_name}" to activate'])
+                self.command_executed.emit(f"Switched to {actual_name}")
             else:
                 self.command_failed.emit("Switch command not implemented for this platform")
         except Exception as e:
-            self.command_failed.emit(f"Failed to switch to {app_name}: {str(e)}")
+            self.command_failed.emit(f"Failed to switch to {actual_name}: {str(e)}")
 
     def _handle_minimize(self, args):
         """Handle the 'minimize' command"""

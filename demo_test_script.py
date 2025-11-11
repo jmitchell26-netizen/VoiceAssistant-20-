@@ -133,6 +133,66 @@ class DemoTester:
             print("- Ensure internet connection for Google Speech API")
             print("- Run: pip3 install -r requirements.txt")
 
+    def test_app_launcher(self):
+        """Test the smart app launcher"""
+        print(f"\n{'='*50}")
+        print("Testing Smart App Launcher")
+        print(f"{'='*50}\n")
+        
+        print("Testing app launcher functionality...")
+        
+        try:
+            # Import the app launcher
+            import sys
+            sys.path.insert(0, '/Users/joeymitchell/Voice assistant/src')
+            from app.utils.app_launcher import AppLauncher
+            
+            launcher = AppLauncher()
+            print("✅ AppLauncher imported")
+            
+            # Test alias resolution
+            print("\n🔍 Testing alias resolution:")
+            test_aliases = [
+                ("chrome", "Google Chrome"),
+                ("vs code", "Visual Studio Code"),
+                ("terminal", "Terminal"),
+                ("spotify", "Spotify"),
+            ]
+            
+            for alias, expected in test_aliases:
+                resolved = launcher._resolve_alias(alias)
+                if resolved == expected:
+                    print(f"  ✅ '{alias}' → '{resolved}'")
+                else:
+                    print(f"  ⚠️  '{alias}' → '{resolved}' (expected: {expected})")
+            
+            # List installed apps
+            print("\n📦 Scanning installed applications...")
+            installed = launcher.list_installed_apps()
+            print(f"  Found {len(installed)} installed applications")
+            
+            if len(installed) > 0:
+                print(f"  Sample apps: {', '.join(installed[:5])}")
+                print("✅ App scanning works")
+            
+            # Test fuzzy matching
+            print("\n🎯 Testing fuzzy matching:")
+            if "Visual Studio Code" in installed:
+                match = launcher._find_best_match("visual", installed)
+                if match:
+                    print(f"  ✅ 'visual' → Found: {match}")
+                else:
+                    print(f"  ❌ Could not match 'visual'")
+            
+            print(f"\n{'='*50}")
+            print("App Launcher Test Complete!")
+            print(f"{'='*50}\n")
+            
+        except Exception as e:
+            print(f"❌ App launcher test failed: {e}")
+            import traceback
+            traceback.print_exc()
+
 if __name__ == "__main__":
     print("""
     ╔══════════════════════════════════════════════════╗
@@ -148,6 +208,12 @@ if __name__ == "__main__":
     # Test voice recognition first
     tester.test_voice_recognition()
     
+    # Test app launcher
+    print("\n")
+    response = input("Test smart app launcher? (y/n): ")
+    if response.lower() == 'y':
+        tester.test_app_launcher()
+    
     # Test browser commands
     response = input("\n\nTest Safari commands? (y/n): ")
     if response.lower() == 'y':
@@ -160,5 +226,6 @@ if __name__ == "__main__":
     print("  [ ] Accessibility permissions granted")
     print("  [ ] Floating button visible")
     print("  [ ] Volume at appropriate level")
+    print("  [ ] App launcher recognizes common apps")
     print("\nGood luck with your presentation! 🚀")
 

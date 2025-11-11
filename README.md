@@ -40,7 +40,11 @@ Press **Ctrl+Space** from Safari or Chrome, say "new tab", and watch it happen. 
 - Text formatting commands
 - Live preview of transcribed text
 
-### 🖥️ System Control
+### 🖥️ Smart System Control (NEW!)
+- **Intelligent app launching** - Say "open vs code" or "open chrome"
+- **50+ built-in app aliases** - Works with common app nicknames
+- **Fuzzy matching** - Finds apps even if you don't say exact name
+- **Smart suggestions** - Helpful hints if app not found
 - Application management (open, close, switch)
 - Window control (minimize, maximize)
 - Web search capabilities
@@ -142,10 +146,27 @@ python3 src/main.py
 
 ### General Commands (Always Available)
 
+**Smart App Launching:**
 ```
-"open [app name]"          → Launch application
-"close [app name]"         → Close application
-"switch to [app name]"     → Switch to app
+"open chrome"              → Opens Google Chrome
+"open vs code"             → Opens Visual Studio Code
+"open spotify"             → Opens Spotify
+"open terminal"            → Opens Terminal
+"open photoshop"           → Opens Adobe Photoshop
+"close slack"              → Closes Slack
+"switch to chrome"         → Switches to Chrome
+```
+
+**Works with 50+ app aliases!** Say common names like:
+- "chrome", "firefox", "safari", "brave", "edge"
+- "vs code", "pycharm", "xcode", "sublime"
+- "slack", "discord", "zoom", "teams"
+- "word", "excel", "powerpoint", "keynote"
+- "spotify", "music", "vlc"
+- And many more! See [APP_LAUNCHER_GUIDE.md](APP_LAUNCHER_GUIDE.md)
+
+**Other System Commands:**
+```
 "minimize window"          → Minimize window
 "maximize window"          → Maximize window
 ```
@@ -188,6 +209,7 @@ python3 src/main.py
 ### Getting Started
 - **[START_HERE.md](START_HERE.md)** - Quick start guide
 - **[GLOBAL_HOTKEY_GUIDE.md](GLOBAL_HOTKEY_GUIDE.md)** - Complete hotkey usage guide
+- **[APP_LAUNCHER_GUIDE.md](APP_LAUNCHER_GUIDE.md)** - Smart app launching guide
 - **[BROWSER_FEATURE_TEST.md](BROWSER_FEATURE_TEST.md)** - Testing checklist
 
 ### Technical Documentation
