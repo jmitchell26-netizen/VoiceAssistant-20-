@@ -185,11 +185,22 @@ python3 src/main.py
 
 ## 📚 Documentation
 
+### Getting Started
 - **[START_HERE.md](START_HERE.md)** - Quick start guide
 - **[GLOBAL_HOTKEY_GUIDE.md](GLOBAL_HOTKEY_GUIDE.md)** - Complete hotkey usage guide
 - **[BROWSER_FEATURE_TEST.md](BROWSER_FEATURE_TEST.md)** - Testing checklist
+
+### Technical Documentation
 - **[BROWSER_FEATURE_IMPLEMENTATION.md](BROWSER_FEATURE_IMPLEMENTATION.md)** - Technical details
+- **[ARCHITECTURE_DIAGRAM.md](ARCHITECTURE_DIAGRAM.md)** - System architecture and design
 - **[USABILITY_IMPROVEMENTS_SUMMARY.md](USABILITY_IMPROVEMENTS_SUMMARY.md)** - Feature summary
+
+### Presentation & Demo Materials
+- **[SHOWCASE_PREPARATION_SUMMARY.md](SHOWCASE_PREPARATION_SUMMARY.md)** - Complete 1.5 week presentation prep plan
+- **[PRESENTATION_OUTLINE.md](PRESENTATION_OUTLINE.md)** - 5-minute presentation structure with speaking notes
+- **[DEMO_SCENARIOS.md](DEMO_SCENARIOS.md)** - Multiple demo scripts with timing and recovery plans
+- **[PRESENTATION_QUICK_REFERENCE.md](PRESENTATION_QUICK_REFERENCE.md)** - One-page cheat sheet for presentation day
+- **[demo_test_script.py](demo_test_script.py)** - Pre-flight testing tool for demos
 
 ## 🐛 Troubleshooting
 
