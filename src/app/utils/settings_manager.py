@@ -8,13 +8,13 @@ class SettingsManager:
         self.settings_file = os.path.join(self.settings_dir, "settings.json")
         self.default_settings = {
             "voice_recognition": {
-                "energy_threshold": 110,
+                "energy_threshold": 150,  # Lower = more sensitive (was 300)
                 "dynamic_energy_threshold": True,
                 "dynamic_energy_adjustment_damping": 0.15,
-                "dynamic_energy_ratio": 1.2,
-                "pause_threshold": 1.2,
-                "phrase_threshold": 0.3,
-                "non_speaking_duration": 0.4,
+                "dynamic_energy_ratio": 1.5,  # Better ambient noise handling
+                "pause_threshold": 0.8,  # Faster response time (was 1.2)
+                "phrase_threshold": 0.2,  # Quicker detection (was 0.3)
+                "non_speaking_duration": 0.5,  # Better end detection
                 "audio_threshold": 0.01,
             },
             "theme": {

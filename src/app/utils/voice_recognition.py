@@ -35,13 +35,13 @@ class VoiceRecognitionManager(QObject):
             non_speaking_duration = self.settings_manager.get_setting('voice_recognition', 'non_speaking_duration')
         else:
             # Use optimal defaults from testing
-            energy_threshold = 110
-            pause_threshold = 1.2
+            energy_threshold = 150
+            pause_threshold = 0.8
             dynamic_energy_threshold = True
             dynamic_energy_adjustment_damping = 0.15
-            dynamic_energy_ratio = 1.2
-            phrase_threshold = 0.3
-            non_speaking_duration = 0.4
+            dynamic_energy_ratio = 1.5
+            phrase_threshold = 0.2
+            non_speaking_duration = 0.5
         
         # Apply optimal settings from testing
         self.recognizer.energy_threshold = energy_threshold
@@ -53,8 +53,8 @@ class VoiceRecognitionManager(QObject):
         self.recognizer.non_speaking_duration = non_speaking_duration
         
         # Audio settings optimized for your microphone
-        self.RATE = 16000  # Standard rate for speech recognition
-        self.CHUNK = 1024  # Smaller chunks for more frequent processing
+        self.RATE = 44100  # Higher quality sample rate for better recognition
+        self.CHUNK = 2048  # Larger chunks for smoother processing
         self.FORMAT = pyaudio.paFloat32
         self.CHANNELS = 1
         self.AUDIO_THRESHOLD = 0.1  # Adjusted for your audio levels
@@ -99,7 +99,7 @@ class VoiceRecognitionManager(QObject):
                 # Calibrate for ambient noise
                 with self.microphone as source:
                     print("\nCalibrating for ambient noise... Please be quiet.")
-                    self.recognizer.adjust_for_ambient_noise(source, duration=2)
+                    self.recognizer.adjust_for_ambient_noise(source, duration=1)
                     print(f"Calibration complete. Energy threshold now: {self.recognizer.energy_threshold}")
                 
                 # Start listening in background (like the test version)
