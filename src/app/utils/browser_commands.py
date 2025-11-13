@@ -313,6 +313,18 @@ class SafariCommands(BrowserCommandHandler):
             self.command_executed.emit("Scrolled to bottom")
         else:
             self.command_failed.emit(f"Failed to scroll: {msg}")
+    
+    def get_current_url(self):
+        """Get the URL of the current tab"""
+        script = '''
+        tell application "Safari"
+            return URL of current tab of front window
+        end tell
+        '''
+        success, url = self.execute_applescript(script)
+        if success:
+            return url.strip()
+        return None
 
 
 class ChromeCommands(BrowserCommandHandler):
@@ -587,6 +599,18 @@ class ChromeCommands(BrowserCommandHandler):
             self.command_executed.emit("Scrolled to bottom")
         else:
             self.command_failed.emit(f"Failed to scroll: {msg}")
+    
+    def get_current_url(self):
+        """Get the URL of the current tab"""
+        script = '''
+        tell application "Google Chrome"
+            return URL of active tab of front window
+        end tell
+        '''
+        success, url = self.execute_applescript(script)
+        if success:
+            return url.strip()
+        return None
 
 
 class BrowserCommandRouter(QObject):

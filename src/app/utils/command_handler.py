@@ -4,23 +4,30 @@ import platform
 
 from .browser_commands import BrowserCommandRouter
 from .app_launcher import AppLauncher
+from .google_docs_commands import GoogleDocsCommands
 
 class CommandHandler(QObject):
     command_executed = pyqtSignal(str)
     command_failed = pyqtSignal(str)
     suggestion_updated = pyqtSignal(list)
-    context_changed = pyqtSignal(str)  # Emits 'general', 'browser', etc.
+    context_changed = pyqtSignal(str)  # Emits 'general', 'browser', 'google_docs'
 
     def __init__(self):
         super().__init__()
         self.browser_router = BrowserCommandRouter()
         self.app_launcher = AppLauncher()
+        self.google_docs_handler = GoogleDocsCommands()
         self.current_context = 'general'
         self.is_browser_active = False
+        self.is_google_docs_active = False
         
         # Connect browser command signals
         self.browser_router.command_executed.connect(self.command_executed.emit)
         self.browser_router.command_failed.connect(self.command_failed.emit)
+        
+        # Connect Google Docs command signals
+        self.google_docs_handler.command_executed.connect(self.command_executed.emit)
+        self.google_docs_handler.command_failed.connect(self.command_failed.emit)
         
         # Connect app launcher signals
         self.app_launcher.app_opened.connect(lambda name: self.command_executed.emit(f"Opened {name}"))
@@ -62,24 +69,134 @@ class CommandHandler(QObject):
     def set_browser_active(self, browser_name):
         """Called when a browser becomes the active app"""
         self.is_browser_active = True
-        self.current_context = 'browser'
+        # Don't override context if Google Docs is active
+        if not self.is_google_docs_active:
+            self.current_context = 'browser'
+            self.context_changed.emit('browser')
+            print(f"Context changed to: browser ({browser_name})")
         self.browser_router.set_active_browser(browser_name)
-        self.context_changed.emit('browser')
-        print(f"Context changed to: browser ({browser_name})")
     
     def set_browser_inactive(self):
         """Called when switching away from a browser"""
         self.is_browser_active = False
+        self.is_google_docs_active = False
         self.current_context = 'general'
         self.context_changed.emit('general')
         print("Context changed to: general")
+    
+    def set_google_docs_active(self, browser_name):
+        """Called when Google Docs becomes active in a browser"""
+        self.is_google_docs_active = True
+        self.is_browser_active = True
+        self.current_context = 'google_docs'
+        self.google_docs_handler.set_browser(browser_name)
+        self.context_changed.emit('google_docs')
+        print(f"Context changed to: google_docs in {browser_name}")
+    
+    def set_google_docs_inactive(self):
+        """Called when switching away from Google Docs"""
+        self.is_google_docs_active = False
+        # Return to browser context if still in browser
+        if self.is_browser_active:
+            self.current_context = 'browser'
+            self.context_changed.emit('browser')
+            print("Context changed to: browser")
+        else:
+            self.current_context = 'general'
+            self.context_changed.emit('general')
+            print("Context changed to: general")
 
     def process_command(self, command_text):
         """Process a voice command with context awareness"""
         try:
             command_text = command_text.lower().strip()
             
-            # Try browser commands first if in browser context
+            # Priority 1: Try Google Docs commands if in Google Docs
+            if self.is_google_docs_active:
+                # Text formatting commands
+                if command_text in ['make this bold', 'bold', 'make bold']:
+                    self.google_docs_handler.make_bold()
+                    return
+                elif command_text in ['make this italic', 'italic', 'make italic']:
+                    self.google_docs_handler.make_italic()
+                    return
+                elif command_text in ['underline this', 'underline', 'make underline']:
+                    self.google_docs_handler.make_underline()
+                    return
+                elif command_text in ['strikethrough', 'strike through']:
+                    self.google_docs_handler.strikethrough()
+                    return
+                
+                # Font size commands
+                elif command_text in ['increase font size', 'bigger font', 'make bigger']:
+                    self.google_docs_handler.increase_font_size()
+                    return
+                elif command_text in ['decrease font size', 'smaller font', 'make smaller']:
+                    self.google_docs_handler.decrease_font_size()
+                    return
+                
+                # Line spacing commands
+                elif command_text in ['single space', 'single spacing']:
+                    self.google_docs_handler.single_space()
+                    return
+                elif command_text in ['double space', 'double spacing']:
+                    self.google_docs_handler.double_space()
+                    return
+                elif command_text in ['line spacing one point five', 'one point five spacing', '1.5 spacing']:
+                    self.google_docs_handler.line_spacing_one_five()
+                    return
+                
+                # List commands
+                elif command_text in ['add bullets', 'bullet list', 'bullets']:
+                    self.google_docs_handler.add_bullets()
+                    return
+                elif command_text in ['add numbering', 'numbered list', 'numbering']:
+                    self.google_docs_handler.add_numbering()
+                    return
+                elif command_text in ['remove bullets', 'remove numbering']:
+                    self.google_docs_handler.remove_bullets()
+                    return
+                
+                # Alignment commands
+                elif command_text in ['align left', 'left align']:
+                    self.google_docs_handler.align_left()
+                    return
+                elif command_text in ['align center', 'center align', 'center']:
+                    self.google_docs_handler.align_center()
+                    return
+                elif command_text in ['align right', 'right align']:
+                    self.google_docs_handler.align_right()
+                    return
+                elif command_text in ['justify', 'justify text']:
+                    self.google_docs_handler.align_justify()
+                    return
+                
+                # Heading commands
+                elif command_text in ['heading one', 'heading 1', 'h1']:
+                    self.google_docs_handler.heading_one()
+                    return
+                elif command_text in ['heading two', 'heading 2', 'h2']:
+                    self.google_docs_handler.heading_two()
+                    return
+                elif command_text in ['heading three', 'heading 3', 'h3']:
+                    self.google_docs_handler.heading_three()
+                    return
+                elif command_text in ['normal text', 'normal style', 'paragraph']:
+                    self.google_docs_handler.normal_text()
+                    return
+                
+                # Color commands
+                elif 'text color' in command_text or 'change color' in command_text:
+                    self.google_docs_handler.change_text_color(command_text)
+                    return
+                elif 'highlight' in command_text:
+                    self.google_docs_handler.highlight_text()
+                    return
+                elif command_text in ['clear formatting', 'remove formatting']:
+                    self.google_docs_handler.clear_formatting()
+                    return
+            
+            # Priority 2: Try browser commands if in browser context
             if self.is_browser_active:
                 # Check for "go to" or "search for" commands (special handling)
                 if command_text.startswith('go to '):
@@ -104,7 +221,7 @@ class CommandHandler(QObject):
                         handler()
                         return
             
-            # Fall back to general commands
+            # Priority 3: Fall back to general commands
             for cmd, handler in self.commands.items():
                 if command_text.startswith(cmd):
                     args = command_text[len(cmd):].strip()
@@ -112,10 +229,13 @@ class CommandHandler(QObject):
                     return
             
             # No matching command found
-            if self.is_browser_active:
-                self.command_failed.emit(f"Unknown command: {command_text} (Try browser commands like 'close tab', 'go back', etc.)")
-            else:
-                self.command_failed.emit(f"Unknown command: {command_text}")
+            context_hint = ""
+            if self.is_google_docs_active:
+                context_hint = " (Try formatting commands like 'make bold', 'increase font size', 'add bullets')"
+            elif self.is_browser_active:
+                context_hint = " (Try browser commands like 'close tab', 'go back', etc.)"
+            
+            self.command_failed.emit(f"Unknown command: {command_text}{context_hint}")
             
         except Exception as e:
             self.command_failed.emit(f"Error executing command: {str(e)}")
@@ -125,8 +245,41 @@ class CommandHandler(QObject):
         suggestions = []
         partial_command = partial_command.lower()
         
+        # Google Docs-specific commands if in Google Docs context
+        if self.is_google_docs_active:
+            google_docs_commands = [
+                "make bold",
+                "make italic",
+                "underline this",
+                "strikethrough",
+                "increase font size",
+                "decrease font size",
+                "single space",
+                "double space",
+                "1.5 spacing",
+                "add bullets",
+                "add numbering",
+                "remove bullets",
+                "align left",
+                "align center",
+                "align right",
+                "justify",
+                "heading one",
+                "heading two",
+                "heading three",
+                "normal text",
+                "change text color",
+                "highlight this",
+                "clear formatting"
+            ]
+            
+            # Filter Google Docs suggestions
+            for cmd in google_docs_commands:
+                if partial_command in cmd.lower() or not partial_command:
+                    suggestions.append(cmd)
+        
         # Browser-specific commands if in browser context
-        if self.is_browser_active:
+        elif self.is_browser_active:
             browser_commands = [
                 "close tab",
                 "new tab",

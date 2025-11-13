@@ -10,7 +10,15 @@ Press **Ctrl+Space** from Safari or Chrome, say "new tab", and watch it happen. 
 
 ## ✨ Key Features
 
-### 🌐 **Context-Aware Browser Control** (NEW!)
+### 📝 **Google Docs Voice Control** (NEW!)
+- **Automatic Google Docs detection** - Works in Safari and Chrome
+- **Full formatting control** - Bold, italic, underline, font size, line spacing
+- **Smart text styling** - Headings, lists, alignment, colors
+- **AI-powered punctuation** - Automatic punctuation insertion for natural speech
+- **Enhanced voice typing** - 40+ punctuation commands including bullets (•, *, -)
+- **Seamless integration** - Switches to Google Docs mode automatically
+
+### 🌐 **Context-Aware Browser Control**
 - **Automatic detection** of Safari, Chrome, Firefox, Arc, Brave, and Edge
 - **Browser-specific commands** - "new tab", "close tab", "go to [url]"
 - **Smart navigation** - "go back", "search for [query]", "refresh"
@@ -24,19 +32,23 @@ Press **Ctrl+Space** from Safari or Chrome, say "new tab", and watch it happen. 
 - Stay in Safari/Chrome while giving voice commands
 - Browser stays focused the entire time
 
-### 🎤 **Enhanced Floating Button** (NEW!)
+### 🎤 **Enhanced Floating Button**
 - **Color-coded status**:
   - 🔘 Gray = Not listening
   - 🔵 Blue = Listening (general mode)
   - 🟢 Green = Listening + Browser mode active!
+  - 📝 Blue banner = Google Docs mode active!
 - Click to toggle listening
 - Drag to reposition anywhere on screen
 - Always on top of all windows
 - Double-click to show/hide main window
 
-### 📝 Voice Typing
+### 📝 Enhanced Voice Typing
+- **AI-powered automatic punctuation** - Speaks naturally, punctuation added automatically
+- **40+ punctuation commands** - "period", "comma", "bullet point", "em dash", etc.
+- **Bullet and list support** - "bullet" (•), "star" (*), "number one" (1.)
+- **Smart command detection** - Automatically distinguishes commands from dictation
 - Real-time speech-to-text conversion
-- Natural punctuation commands ("period", "comma", etc.)
 - Text formatting commands
 - Live preview of transcribed text
 
@@ -118,6 +130,48 @@ python3 src/main.py
    - Use buttons in the interface
    - View command suggestions and help
 
+### Google Docs Commands (When in Google Docs)
+
+**Text Formatting:**
+```
+"make bold" / "bold"           → Toggle bold
+"make italic" / "italic"       → Toggle italic
+"underline this"               → Toggle underline
+"strikethrough"                → Toggle strikethrough
+```
+
+**Font Size & Spacing:**
+```
+"increase font size"           → Make text bigger
+"decrease font size"           → Make text smaller
+"single space"                 → Set single line spacing
+"double space"                 → Set double line spacing
+"1.5 spacing"                  → Set 1.5 line spacing
+```
+
+**Lists & Alignment:**
+```
+"add bullets"                  → Create bullet list
+"add numbering"                → Create numbered list
+"align left" / "center"        → Align text
+"align right" / "justify"      → Align text
+```
+
+**Headings & Styles:**
+```
+"heading one"                  → Apply Heading 1
+"heading two"                  → Apply Heading 2
+"heading three"                → Apply Heading 3
+"normal text"                  → Apply normal style
+```
+
+**Colors & Formatting:**
+```
+"change text color"            → Open color picker
+"highlight this"               → Open highlight picker
+"clear formatting"             → Remove all formatting
+```
+
 ### Browser Commands (When Green Button Shows)
 
 **Tab Management:**
@@ -173,13 +227,50 @@ python3 src/main.py
 
 ### Voice Typing Commands
 
+**Basic Punctuation:**
 ```
-"period" / "comma"         → Add punctuation
-"new line"                 → Line break
-"new paragraph"            → Paragraph break
-"capitalize that"          → Capitalize last phrase
-"all caps" / "lowercase"   → Change case
+"period" / "comma"              → . ,
+"question mark"                 → ?
+"exclamation point"             → !
+"semicolon" / "colon"           → ; :
 ```
+
+**Quotes & Brackets:**
+```
+"open quote" / "close quote"    → " "
+"apostrophe"                    → '
+"open parenthesis"              → (
+"open bracket" / "close bracket"→ [ ]
+```
+
+**Special Characters:**
+```
+"hyphen" / "dash"               → - –
+"em dash"                       → —
+"underscore"                    → _
+"ellipsis"                      → ...
+```
+
+**Bullets & Lists:**
+```
+"bullet" / "bullet point"       → •
+"star"                          → *
+"dash bullet"                   → -
+"number one" / "number two"     → 1. 2.
+```
+
+**Line Breaks & Formatting:**
+```
+"new line"                      → Line break
+"new paragraph"                 → Paragraph break
+"capitalize that"               → Capitalize last phrase
+"all caps" / "lowercase"        → Change case
+```
+
+**AI-Powered Punctuation (Optional):**
+- Enable in settings for automatic punctuation
+- Speak naturally without saying punctuation
+- AI model adds commas, periods automatically
 
 ## ⌨️ Keyboard Shortcuts
 
@@ -202,6 +293,7 @@ python3 src/main.py
 - pyttsx3 - Text-to-speech
 - pynput - Global hotkey support
 - pyaudio - Audio processing
+- deepmultilingualpunctuation - AI-powered automatic punctuation
 - See `requirements.txt` for complete list
 
 ## 📚 Documentation
@@ -213,7 +305,8 @@ python3 src/main.py
 - **[BROWSER_FEATURE_TEST.md](BROWSER_FEATURE_TEST.md)** - Testing checklist
 
 ### Technical Documentation
-- **[BROWSER_FEATURE_IMPLEMENTATION.md](BROWSER_FEATURE_IMPLEMENTATION.md)** - Technical details
+- **[GOOGLE_DOCS_FEATURES_IMPLEMENTATION.md](GOOGLE_DOCS_FEATURES_IMPLEMENTATION.md)** - Google Docs voice control details
+- **[BROWSER_FEATURE_IMPLEMENTATION.md](BROWSER_FEATURE_IMPLEMENTATION.md)** - Browser control technical details
 - **[ARCHITECTURE_DIAGRAM.md](ARCHITECTURE_DIAGRAM.md)** - System architecture and design
 - **[USABILITY_IMPROVEMENTS_SUMMARY.md](USABILITY_IMPROVEMENTS_SUMMARY.md)** - Feature summary
 
@@ -283,6 +376,15 @@ Ctrl+Space                       → Stop listening
 
 ## 🚀 What's New in Latest Version
 
+### v3.0 - Google Docs Voice Control
+- ✅ **Google Docs Integration** - Full formatting control via voice
+- ✅ **AI-Powered Punctuation** - Automatic punctuation insertion
+- ✅ **70+ Formatting Commands** - Bold, italic, headings, lists, alignment
+- ✅ **Enhanced Voice Typing** - 40+ punctuation commands with bullets
+- ✅ **Smart Context Detection** - Auto-switches to Google Docs mode
+- ✅ **Line Spacing Control** - Single, double, 1.5 spacing
+- ✅ **Color & Highlighting** - Text color and highlight picker access
+
 ### v2.0 - Context-Aware Intelligence
 - ✅ **Browser Power User** - Context-aware browser control
 - ✅ **Global Hotkey** - Ctrl+Space works from any app
@@ -303,6 +405,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Voice training for better accuracy
 - Command history and replay
 - Multi-language support
+- Microsoft Word online support
+- Google Sheets voice commands
+- Direct color selection by name
+- Table manipulation commands
 
 ## 📄 License
 

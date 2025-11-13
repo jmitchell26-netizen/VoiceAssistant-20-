@@ -59,7 +59,7 @@ class VoiceWidget(QWidget):
         super().__init__()
         self.settings_manager = settings_manager
         self.voice_manager = VoiceRecognitionManager(settings_manager=self.settings_manager)
-        self.typing_mode = VoiceTypingMode(self.voice_manager)
+        self.typing_mode = VoiceTypingMode(self.voice_manager, settings_manager=self.settings_manager)
         self.command_handler = CommandHandler()
         self.contextual_help = ContextualHelp()
         self.window_detector = ActiveWindowDetector()
@@ -87,22 +87,14 @@ class VoiceWidget(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
         
-        # Context indicator (shows browser mode, etc.)
+        # Context indicator (shows browser mode, Google Docs mode, etc.)
         self.context_label = QLabel("")
         self.context_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.context_label.setStyleSheet("""
-            QLabel {
-                color: #4CAF50;
-                font-size: 14px;
-                font-weight: bold;
-                padding: 8px;
-                background: rgba(76, 175, 80, 0.1);
-                border-radius: 5px;
-                min-height: 20px;
-            }
-        """)
         self.context_label.hide()  # Hidden by default
         layout.addWidget(self.context_label)
+        
+        # Store current context for dynamic styling
+        self.current_context = 'general'
         
         # Animated microphone icon with status
         self.animated_mic = AnimatedMicrophoneIcon()
@@ -210,7 +202,12 @@ class VoiceWidget(QWidget):
         # Connect window detector signals
         self.window_detector.browser_active.connect(self.handle_browser_active)
         self.window_detector.browser_inactive.connect(self.handle_browser_inactive)
+        self.window_detector.google_docs_active.connect(self.handle_google_docs_active)
+        self.window_detector.google_docs_inactive.connect(self.handle_google_docs_inactive)
         self.window_detector.active_app_changed.connect(self.handle_app_changed)
+        
+        # Connect window detector to browser router for URL checking
+        self.window_detector.set_browser_router(self.command_handler.browser_router)
         
         # Connect global hotkey signals
         self.hotkey_manager.toggle_listening.connect(self.handle_global_toggle)
@@ -254,7 +251,19 @@ class VoiceWidget(QWidget):
         self.update_button_states()
         
     def handle_text_received(self, text):
-        if self.is_typing:
+        # Check if this looks like a command or typing
+        is_likely_command = self._is_likely_command(text)
+        
+        # In Google Docs, default to typing mode unless explicitly a command
+        if self.current_context == 'google_docs' and not is_likely_command:
+            # Auto-typing mode in Google Docs
+            processed_text = self.typing_mode.process_text(text)
+            self.text_preview.setText(f"📝 {processed_text}")
+            # In Google Docs, the text would be typed automatically
+            # (This is a preview - actual typing would need pyautogui or similar)
+            
+        elif self.is_typing:
+            # Explicit typing mode
             processed_text = self.typing_mode.process_text(text)
             current_text = self.text_preview.toPlainText()
             if current_text:
@@ -265,7 +274,8 @@ class VoiceWidget(QWidget):
             help_info = self.contextual_help.get_contextual_help(text)
             self.quick_reference.update_commands(text)
             
-        elif self.is_command_mode:
+        elif self.is_command_mode or is_likely_command:
+            # Command mode - process as command
             self.command_preview.setText(f"Command: {text}")
             self.command_handler.process_command(text)
             
@@ -279,6 +289,36 @@ class VoiceWidget(QWidget):
             if tip:
                 self.partial_text_label.setText(f"💡 {tip}")
                 QTimer.singleShot(5000, lambda: self._reset_partial_text_style())
+        else:
+            # Default: try as command first
+            self.command_preview.setText(f"Command: {text}")
+            self.command_handler.process_command(text)
+    
+    def _is_likely_command(self, text):
+        """Detect if text is likely a command vs regular speech"""
+        text_lower = text.lower().strip()
+        
+        # Common command action verbs
+        command_verbs = [
+            'open', 'close', 'switch', 'go', 'search', 'find', 'new', 'refresh',
+            'scroll', 'zoom', 'bookmark', 'make', 'add', 'remove', 'change',
+            'increase', 'decrease', 'set', 'align', 'clear', 'apply', 'insert'
+        ]
+        
+        # Check if starts with a command verb
+        for verb in command_verbs:
+            if text_lower.startswith(verb + ' ') or text_lower == verb:
+                return True
+        
+        # Very short phrases are likely commands
+        if len(text_lower.split()) <= 3 and any(verb in text_lower for verb in command_verbs):
+            return True
+        
+        # If it's a complete sentence (has multiple words and doesn't start with command verb), likely typing
+        if len(text_lower.split()) > 5:
+            return False
+        
+        return False  # Default to not a command (will be treated as typing)
         
     def handle_partial_text(self, text):
         """Update the partial text display with interim transcription"""
@@ -384,9 +424,10 @@ class VoiceWidget(QWidget):
         # Notify command handler
         self.command_handler.set_browser_active(browser_name)
         
-        # Show browser mode indicator
-        self.context_label.setText(f"🌐 Browser Mode: {browser_name}")
-        self.context_label.show()
+        # Show browser mode indicator (but only if not in Google Docs)
+        if not self.command_handler.is_google_docs_active:
+            self.current_context = 'browser'
+            self._update_context_label(f"🌐 Browser Mode: {browser_name}")
         
         # Update suggestions to show browser commands
         if self.is_command_mode:
@@ -398,11 +439,77 @@ class VoiceWidget(QWidget):
         self.command_handler.set_browser_inactive()
         
         # Hide browser mode indicator
+        self.current_context = 'general'
         self.context_label.hide()
         
         # Update suggestions back to general commands
         if self.is_command_mode:
             self.command_handler.get_suggestions("")
+    
+    def handle_google_docs_active(self, browser_name):
+        """Handle when Google Docs becomes active"""
+        # Notify command handler
+        self.command_handler.set_google_docs_active(browser_name)
+        
+        # Show Google Docs mode indicator
+        self.current_context = 'google_docs'
+        self._update_context_label(f"📝 Google Docs Mode: {browser_name}")
+        
+        # Update suggestions to show Google Docs commands
+        if self.is_command_mode:
+            self.command_handler.get_suggestions("")
+    
+    def handle_google_docs_inactive(self):
+        """Handle when switching away from Google Docs"""
+        # Notify command handler
+        self.command_handler.set_google_docs_inactive()
+        
+        # Update UI - might go back to browser mode or general
+        if self.command_handler.is_browser_active:
+            self.current_context = 'browser'
+            browser_name = self.window_detector.get_active_browser()
+            self._update_context_label(f"🌐 Browser Mode: {browser_name}")
+        else:
+            self.current_context = 'general'
+            self.context_label.hide()
+        
+        # Update suggestions
+        if self.is_command_mode:
+            self.command_handler.get_suggestions("")
+    
+    def _update_context_label(self, text):
+        """Update context label with appropriate styling"""
+        self.context_label.setText(text)
+        
+        # Different colors for different contexts
+        if self.current_context == 'google_docs':
+            # Blue for Google Docs
+            self.context_label.setStyleSheet("""
+                QLabel {
+                    color: #2196F3;
+                    font-size: 14px;
+                    font-weight: bold;
+                    padding: 8px;
+                    background: rgba(33, 150, 243, 0.1);
+                    border-radius: 5px;
+                    min-height: 20px;
+                }
+            """)
+        elif self.current_context == 'browser':
+            # Green for browser
+            self.context_label.setStyleSheet("""
+                QLabel {
+                    color: #4CAF50;
+                    font-size: 14px;
+                    font-weight: bold;
+                    padding: 8px;
+                    background: rgba(76, 175, 80, 0.1);
+                    border-radius: 5px;
+                    min-height: 20px;
+                }
+            """)
+        
+        self.context_label.show()
     
     def handle_app_changed(self, app_name):
         """Handle when the active app changes"""
@@ -411,6 +518,10 @@ class VoiceWidget(QWidget):
     def handle_context_changed(self, context):
         """Handle when the command context changes"""
         print(f"Command context: {context}")
+        self.current_context = context
+        # Update quick reference if visible
+        if hasattr(self, 'quick_reference') and self.quick_reference and self.quick_reference.isVisible():
+            self.quick_reference.update_for_context(context)
         
         # Update quick reference to show relevant commands
         if context == 'browser':
