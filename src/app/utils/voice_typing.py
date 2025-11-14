@@ -16,9 +16,12 @@ class VoiceTypingMode:
         
         # Load auto-punctuation setting
         if self.settings_manager:
-            self._auto_punctuation_enabled = self.settings_manager.get_setting(
-                'voice_typing', 'auto_punctuation', default=False
-            )
+            try:
+                self._auto_punctuation_enabled = self.settings_manager.get_setting(
+                    'voice_typing', 'auto_punctuation'
+                )
+            except (KeyError, AttributeError):
+                self._auto_punctuation_enabled = False
     
     @property
     def punctuation_model(self):
