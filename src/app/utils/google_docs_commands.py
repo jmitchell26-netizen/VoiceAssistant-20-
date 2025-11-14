@@ -5,7 +5,6 @@ Provides voice command handlers specifically for Google Docs formatting via brow
 
 from PyQt6.QtCore import QObject, pyqtSignal
 import subprocess
-import time
 
 
 class GoogleDocsCommands(QObject):
@@ -21,6 +20,8 @@ class GoogleDocsCommands(QObject):
     
     def set_browser(self, browser_name):
         """Update which browser Google Docs is running in"""
+        if not browser_name:
+            return
         self.browser_name = browser_name
         self.process_name = "Google Chrome" if "chrome" in browser_name.lower() else browser_name
     

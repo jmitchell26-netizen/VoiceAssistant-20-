@@ -106,3 +106,41 @@ class QuickReferenceCard(QWidget):
         commands += "- Say 'new line' or 'new paragraph'\n"
         
         self.reference_text.setText(commands)
+    
+    def show_google_docs_commands(self):
+        """Show Google Docs-specific commands"""
+        commands = "📝 Google Docs Commands:\n\n"
+        commands += "Text Formatting:\n"
+        commands += "- 'make bold' / 'bold' - Toggle bold\n"
+        commands += "- 'make italic' / 'italic' - Toggle italic\n"
+        commands += "- 'underline this' - Toggle underline\n"
+        commands += "- 'strikethrough' - Toggle strikethrough\n\n"
+        commands += "Font Size & Spacing:\n"
+        commands += "- 'increase font size' - Make text bigger\n"
+        commands += "- 'decrease font size' - Make text smaller\n"
+        commands += "- 'single space' - Set single spacing\n"
+        commands += "- 'double space' - Set double spacing\n"
+        commands += "- '1.5 spacing' - Set 1.5 line spacing\n\n"
+        commands += "Lists & Alignment:\n"
+        commands += "- 'add bullets' - Create bullet list\n"
+        commands += "- 'add numbering' - Create numbered list\n"
+        commands += "- 'align left/center/right' - Align text\n"
+        commands += "- 'justify' - Justify text\n\n"
+        commands += "Headings:\n"
+        commands += "- 'heading one/two/three' - Apply heading\n"
+        commands += "- 'normal text' - Apply normal style\n\n"
+        commands += "Other:\n"
+        commands += "- 'change text color' - Open color picker\n"
+        commands += "- 'highlight this' - Open highlight picker\n"
+        commands += "- 'clear formatting' - Remove formatting\n"
+        
+        self.reference_text.setText(commands)
+    
+    def update_for_context(self, context):
+        """Update quick reference based on current context"""
+        if context == 'google_docs':
+            self.show_google_docs_commands()
+        elif context == 'browser':
+            self.show_browser_commands()
+        else:
+            self.show_general_commands()
