@@ -540,17 +540,23 @@ class VoiceWidget(QWidget):
     def handle_global_toggle(self):
         """Handle Ctrl+Space hotkey press to toggle listening"""
         print("🎤 Global hotkey triggered - toggling voice listening")
+        print(f"   Current state - is_typing: {self.is_typing}, is_command_mode: {self.is_command_mode}")
         
         # Toggle command mode if not already in a mode
         if not self.is_typing and not self.is_command_mode:
             # Start command mode
+            print("   → Starting command mode")
             self.toggle_command_mode()
         elif self.is_command_mode:
             # Stop command mode
+            print("   → Stopping command mode")
             self.toggle_command_mode()
         elif self.is_typing:
             # Stop typing mode
+            print("   → Stopping typing mode")
             self.toggle_typing()
+        
+        print(f"   New state - is_typing: {self.is_typing}, is_command_mode: {self.is_command_mode}")
         
         # Show a brief notification
         self.partial_text_label.setText(f"🎤 {'Listening' if self.is_command_mode or self.is_typing else 'Stopped'} (Ctrl+Space)")
