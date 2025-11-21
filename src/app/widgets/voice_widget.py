@@ -11,6 +11,7 @@ from ..utils.command_handler import CommandHandler
 from ..utils.contextual_help import ContextualHelp
 from ..utils.active_window_detector import ActiveWindowDetector
 from ..utils.global_hotkey import GlobalHotkeyManager
+from ..utils.keyboard_typing import KeyboardTyper
 from .command_suggestions import CommandSuggestions
 from .quick_actions import QuickActionsPanel
 from .quick_reference import QuickReferenceCard
@@ -64,6 +65,7 @@ class VoiceWidget(QWidget):
         self.contextual_help = ContextualHelp()
         self.window_detector = ActiveWindowDetector()
         self.hotkey_manager = GlobalHotkeyManager()
+        self.keyboard_typer = KeyboardTyper()  # For actual typing into applications
         self.init_ui()
         self.setup_connections()
         
@@ -258,9 +260,15 @@ class VoiceWidget(QWidget):
         if self.current_context == 'google_docs' and not is_likely_command:
             # Auto-typing mode in Google Docs
             processed_text = self.typing_mode.process_text(text)
-            self.text_preview.setText(f"📝 {processed_text}")
-            # In Google Docs, the text would be typed automatically
-            # (This is a preview - actual typing would need pyautogui or similar)
+            self.text_preview.setText(f"📝 Typing: {processed_text}")
+            
+            # Actually type the text into Google Docs
+            try:
+                self.keyboard_typer.type_text(processed_text)
+                print(f"✓ Typed into Google Docs: {processed_text}")
+            except Exception as e:
+                print(f"✗ Typing failed: {e}")
+                self.text_preview.setText(f"⚠️ Typing error: {processed_text}")
             
         elif self.is_typing:
             # Explicit typing mode
