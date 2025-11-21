@@ -75,6 +75,7 @@ class VoiceWidget(QWidget):
         
     def closeEvent(self, event):
         """Handle cleanup when widget is closed"""
+        print("⚠️ closeEvent triggered! Cleaning up...")
         self.voice_manager.cleanup()
         self.window_detector.cleanup()
         self.hotkey_manager.cleanup()
@@ -82,6 +83,7 @@ class VoiceWidget(QWidget):
         
     def hideEvent(self, event):
         """Handle when widget is hidden - but keep listening in background!"""
+        print("ℹ️ hideEvent triggered (widget hidden)")
         # Don't stop listening - we want background operation
         # The user can use Ctrl+Space or the floating button to control listening
         super().hideEvent(event)

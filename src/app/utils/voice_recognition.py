@@ -258,10 +258,15 @@ class VoiceRecognitionManager(QObject):
             self.error_occurred.emit(f"Error speaking text: {str(e)}")
 
     def cleanup(self):
+        import traceback
         print("Cleaning up voice recognition resources...")
+        print("Cleanup called from:")
+        for line in traceback.format_stack()[:-1]:
+            print(line.strip())
         self.stop_listening()
         if self.audio:
             self.audio.terminate()
 
     def __del__(self):
+        print("⚠️ VoiceRecognitionManager.__del__ called (object being destroyed)")
         self.cleanup()
