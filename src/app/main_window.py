@@ -59,7 +59,10 @@ class MainWindow(QMainWindow):
                 self.stacked_widget.addWidget(self.help_center)
             
             # Create floating microphone button
+            print("Creating floating button...")
             self.floating_button = FloatingButton(self)
+            print(f"Floating button created: {self.floating_button}")
+            
             if self.floating_button:
                 # Connect floating button to voice widget
                 self.floating_button.clicked_to_toggle.connect(self.voice_widget.handle_global_toggle)
@@ -68,7 +71,11 @@ class MainWindow(QMainWindow):
                 # Update floating button for browser mode
                 self.voice_widget.window_detector.browser_active.connect(lambda b: self.floating_button.set_browser_mode(True))
                 self.voice_widget.window_detector.browser_inactive.connect(lambda: self.floating_button.set_browser_mode(False))
+                
+                # IMPORTANT: Show the floating button
+                print("Showing floating button...")
                 self.floating_button.show()
+                print(f"✓ Floating button should now be visible at position: {self.floating_button.pos()}")
             
             # Show onboarding only if not completed
             if not self.settings_manager.get_setting('interface', 'onboarding_completed'):
