@@ -43,11 +43,13 @@ Press **Ctrl+Space** from Safari or Chrome, say "new tab", and watch it happen. 
 - Always on top of all windows
 - Double-click to show/hide main window
 
-### 📝 Enhanced Voice Typing
+### 📝 Enhanced Voice Typing ⚡ **NEW: ACTUAL TYPING!**
+- **🔥 Keyboard Simulation** - Actually types text into Google Docs (no copy-paste!)
 - **AI-powered automatic punctuation** - Speaks naturally, punctuation added automatically
 - **40+ punctuation commands** - "period", "comma", "bullet point", "em dash", etc.
 - **Bullet and list support** - "bullet" (•), "star" (*), "number one" (1.)
 - **Smart command detection** - Automatically distinguishes commands from dictation
+- **Real-time typing feedback** - Watch your words appear as you speak!
 - Real-time speech-to-text conversion
 - Text formatting commands
 - Live preview of transcribed text
@@ -375,6 +377,13 @@ Ctrl+Space                       → Stop listening
 ```
 
 ## 🚀 What's New in Latest Version
+
+### v3.1 - Actual Typing into Google Docs! 🎯
+- 🔥 **KEYBOARD SIMULATION** - Voice dictation now **ACTUALLY TYPES** into Google Docs!
+- ✅ **No Copy-Paste Needed** - Text appears instantly as you speak
+- ✅ **Smart Text Processing** - Punctuation commands converted before typing
+- ✅ **Real-time Feedback** - Visual confirmation of what's being typed
+- ✅ **Natural Dictation Flow** - Just speak, and watch it type!
 
 ### v3.0 - Google Docs Voice Control
 - ✅ **Google Docs Integration** - Full formatting control via voice
