@@ -307,6 +307,7 @@ python3 src/main.py
 - **[BROWSER_FEATURE_TEST.md](BROWSER_FEATURE_TEST.md)** - Testing checklist
 
 ### Technical Documentation
+- **[TYPING_FEATURE_GUIDE.md](TYPING_FEATURE_GUIDE.md)** - Complete guide to voice typing with keyboard simulation (NEW!)
 - **[GOOGLE_DOCS_FEATURES_IMPLEMENTATION.md](GOOGLE_DOCS_FEATURES_IMPLEMENTATION.md)** - Google Docs voice control details
 - **[BROWSER_FEATURE_IMPLEMENTATION.md](BROWSER_FEATURE_IMPLEMENTATION.md)** - Browser control technical details
 - **[ARCHITECTURE_DIAGRAM.md](ARCHITECTURE_DIAGRAM.md)** - System architecture and design
