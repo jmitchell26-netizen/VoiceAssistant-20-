@@ -195,6 +195,25 @@ class CommandHandler(QObject):
                 elif command_text in ['clear formatting', 'remove formatting']:
                     self.google_docs_handler.clear_formatting()
                     return
+                # Backspace commands
+                elif 'backspace' in command_text or 'delete' in command_text:
+                    import re
+                    # Try to extract number from command like "backspace 3" or "delete 5 characters"
+                    numbers = re.findall(r'\d+', command_text)
+                    if numbers:
+                        count = int(numbers[0])
+                        self.google_docs_handler.backspace_chars(count)
+                        return
+                    elif 'word' in command_text:
+                        self.google_docs_handler.delete_word()
+                        return
+                    elif 'line' in command_text:
+                        self.google_docs_handler.delete_line()
+                        return
+                    else:
+                        # Default to backspace 1
+                        self.google_docs_handler.backspace_chars(1)
+                        return
             
             # Priority 2: Try browser commands if in browser context
             if self.is_browser_active:
@@ -270,7 +289,10 @@ class CommandHandler(QObject):
                 "normal text",
                 "change text color",
                 "highlight this",
-                "clear formatting"
+                "clear formatting",
+                "backspace",
+                "delete word",
+                "delete line"
             ]
             
             # Filter Google Docs suggestions

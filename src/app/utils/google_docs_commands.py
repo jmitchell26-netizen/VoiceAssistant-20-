@@ -352,6 +352,55 @@ class GoogleDocsCommands(QObject):
         else:
             self.command_failed.emit(f"Failed to open highlight picker: {msg}")
     
+    # --- Editing Commands ---
+    def backspace_chars(self, count=1):
+        """Delete characters using backspace (key code 51)"""
+        try:
+            count = int(count)
+            if count < 1 or count > 100:  # Safety limit
+                self.command_failed.emit(f"Invalid backspace count: {count} (must be 1-100)")
+                return
+            
+            for _ in range(count):
+                success, msg = self._press_special_key(51)  # 51 is delete/backspace key code
+                if not success:
+                    self.command_failed.emit(f"Failed to backspace: {msg}")
+                    return
+            
+            self.command_executed.emit(f"Deleted {count} character{'s' if count > 1 else ''}")
+        except ValueError:
+            self.command_failed.emit(f"Invalid backspace count: {count}")
+    
+    def delete_word(self):
+        """Delete the previous word (Option+Delete)"""
+        script = '''
+        tell application "System Events"
+            tell process "''' + self.process_name + '''"
+                key code 51 using {option down}
+            end tell
+        end tell
+        '''
+        success, msg = self.execute_applescript(script)
+        if success:
+            self.command_executed.emit("Deleted word")
+        else:
+            self.command_failed.emit(f"Failed to delete word: {msg}")
+    
+    def delete_line(self):
+        """Delete the current line (Cmd+Delete)"""
+        script = '''
+        tell application "System Events"
+            tell process "''' + self.process_name + '''"
+                key code 51 using {command down}
+            end tell
+        end tell
+        '''
+        success, msg = self.execute_applescript(script)
+        if success:
+            self.command_executed.emit("Deleted line")
+        else:
+            self.command_failed.emit(f"Failed to delete line: {msg}")
+    
     # Additional Formatting
     def strikethrough(self):
         """Toggle strikethrough"""

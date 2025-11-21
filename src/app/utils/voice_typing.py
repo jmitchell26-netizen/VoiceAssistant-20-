@@ -9,6 +9,8 @@ class VoiceTypingMode:
         self.is_active = False
         self.setup_punctuation_commands()
         self.last_text = ""
+        self.last_char = ""  # Track last character for capitalization
+        self.sentence_start = True  # Start of a new sentence
         
         # Initialize automatic punctuation model (lazy loading)
         self._punctuation_model = None
@@ -107,11 +109,14 @@ class VoiceTypingMode:
         text_lower = text.lower()
         for list_cmd, replacement in self.list_commands.items():
             if text_lower == list_cmd:
-                return self.punctuation_commands.get(replacement, replacement)
+                result = self.punctuation_commands.get(replacement, replacement)
+                self._update_sentence_state(result)
+                return result
         
         # Handle formatting commands (capitalize, all caps, etc.)
         formatted_text = self._handle_formatting_commands(text)
         if formatted_text != text:
+            self._update_sentence_state(formatted_text)
             return formatted_text
         
         # Apply automatic punctuation if enabled
@@ -128,7 +133,46 @@ class VoiceTypingMode:
             pattern = r'\b' + re.escape(command) + r'\b'
             text = re.sub(pattern, punctuation, text, flags=re.IGNORECASE)
         
+        # Auto-capitalize first letter if at sentence start
+        text = self._apply_auto_capitalization(text)
+        
+        # Update sentence state for next input
+        self._update_sentence_state(text)
+        
         return text
+    
+    def _apply_auto_capitalization(self, text):
+        """Auto-capitalize the first letter if at the start of a sentence"""
+        if not text:
+            return text
+        
+        # If we're at the start of a sentence, capitalize the first letter
+        if self.sentence_start and text:
+            # Find the first letter and capitalize it
+            for i, char in enumerate(text):
+                if char.isalpha():
+                    text = text[:i] + char.upper() + text[i+1:]
+                    break
+        
+        return text
+    
+    def _update_sentence_state(self, text):
+        """Update whether we're at the start of a new sentence"""
+        if not text:
+            return
+        
+        # Get the last non-whitespace character
+        text_stripped = text.rstrip()
+        if text_stripped:
+            self.last_char = text_stripped[-1]
+            
+            # Check if last character is a sentence ender
+            if self.last_char in ['.', '!', '?']:
+                self.sentence_start = True
+            elif self.last_char.isalnum():
+                # Regular character - we're in the middle of a sentence
+                self.sentence_start = False
+            # Don't change state for other punctuation like commas
     
     def _apply_auto_punctuation(self, text):
         """Apply automatic punctuation using the AI model"""
